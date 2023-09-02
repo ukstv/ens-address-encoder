@@ -303,24 +303,23 @@ function groestll(input: any) {
 }
 
 var groestlClose = function (ctx: any, a?: any, b?: any) {
-  var buf = ctx.buffer;
-  var ptr = ctx.ptr;
-  var pad = new Uint8Array(136);
-  var padLen;
-  var count: bigint;
+  const ptr = ctx.ptr;
+  const pad = new Uint8Array(136);
+  let padLen: number;
+  let count: bigint;
   pad[0] = 0x80;
   if (ptr < 120) {
     padLen = 128 - ptr;
-    count = ctx.count.bigint + 1n
+    count = ctx.count.bigint + 1n;
   } else {
     padLen = 256 - ptr;
-    count = ctx.count.bigint + 2n
+    count = ctx.count.bigint + 2n;
   }
   pad.set(new Array(padLen - 9).fill(0), 1);
   pad.set(numberToBytesBE(count, 8), padLen - 8);
   groestl(ctx, pad, padLen);
   final(ctx.state);
-  var out = new Array(16);
+  const out = new Array(16);
   for (let uu = 0, v = 8; uu < 8; uu++, v++) {
     out[2 * uu] = ctx.state[v].hi;
     out[2 * uu + 1] = ctx.state[v].lo;
