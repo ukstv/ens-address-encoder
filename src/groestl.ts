@@ -167,60 +167,45 @@ var B64 = function (n: any, x: any) {
   }
 };
 
-var j64 = [
-  u(0, 0),
-  u(0, 0x10),
-  u(0, 0x20),
-  u(0, 0x30),
-  u(0, 0x40),
-  u(0, 0x50),
-  u(0, 0x60),
-  u(0, 0x70),
-  u(0, 0x80),
-  u(0, 0x90),
-  u(0, 0xa0),
-  u(0, 0xb0),
-  u(0, 0xc0),
-  u(0, 0xd0),
-  u(0, 0xe0),
-  u(0, 0xf0),
+const J64 = [
+  0x00n,
+  0x10n,
+  0x20n,
+  0x30n,
+  0x40n,
+  0x50n,
+  0x60n,
+  0x70n,
+  0x80n,
+  0x90n,
+  0xa0n,
+  0xb0n,
+  0xc0n,
+  0xd0n,
+  0xe0n,
+  0xf0n,
 ];
 
-var nj64 = [
-  u(0xffffffff, 0xffffffff),
-  u(0xffffffff, 0xffffffef),
-  u(0xffffffff, 0xffffffdf),
-  u(0xffffffff, 0xffffffcf),
-  u(0xffffffff, 0xffffffbf),
-  u(0xffffffff, 0xffffffaf),
-  u(0xffffffff, 0xffffff9f),
-  u(0xffffffff, 0xffffff8f),
-  u(0xffffffff, 0xffffff7f),
-  u(0xffffffff, 0xffffff6f),
-  u(0xffffffff, 0xffffff5f),
-  u(0xffffffff, 0xffffff4f),
-  u(0xffffffff, 0xffffff3f),
-  u(0xffffffff, 0xffffff2f),
-  u(0xffffffff, 0xffffff1f),
-  u(0xffffffff, 0xffffff0f),
+const NJ64 = [
+  0xffffffff_ffffffffn,
+  0xffffffff_ffffffefn,
+  0xffffffff_ffffffdfn,
+  0xffffffff_ffffffcfn,
+  0xffffffff_ffffffbfn,
+  0xffffffff_ffffffafn,
+  0xffffffff_ffffff9fn,
+  0xffffffff_ffffff8fn,
+  0xffffffff_ffffff7fn,
+  0xffffffff_ffffff6fn,
+  0xffffffff_ffffff5fn,
+  0xffffffff_ffffff4fn,
+  0xffffffff_ffffff3fn,
+  0xffffffff_ffffff2fn,
+  0xffffffff_ffffff1fn,
+  0xffffffff_ffffff0fn,
 ];
 
-var r64 = [
-  u(0, 0),
-  u(0, 1),
-  u(0, 2),
-  u(0, 3),
-  u(0, 4),
-  u(0, 5),
-  u(0, 6),
-  u(0, 7),
-  u(0, 8),
-  u(0, 9),
-  u(0, 10),
-  u(0, 11),
-  u(0, 12),
-  u(0, 13),
-];
+const R64 = [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 10n, 11n, 12n, 13n];
 
 var compress = function (int64buf: any, state: any) {
   var g = new Array(16);
@@ -232,8 +217,8 @@ var compress = function (int64buf: any, state: any) {
   var t = new Array(16);
   for (let r = 0; r < 14; r++) {
     for (var i = 0; i < 16; i++) {
-      let b = j64[i].bigint + r64[r].bigint;
-      g[i].setxor64(bigintToU64(b << 56n));
+      let b = J64[i] + R64[r];
+      g[i].setxor64BigInt(b << 56n);
     }
 
     for (let uu = 0; uu < 16; uu++) {
@@ -255,7 +240,7 @@ var compress = function (int64buf: any, state: any) {
   }
   for (let r = 0; r < 14; r++) {
     for (let ii = 0; ii < 16; ii++) {
-      m[ii].setxor64(r64[r], nj64[ii]);
+      m[ii].setxor64BigInt(R64[r], NJ64[ii]);
     }
     for (let uu = 0; uu < 16; uu++) {
       t[uu] = xor64(
@@ -365,8 +350,8 @@ var final = function (state: any) {
   var t = new Array(16);
   for (let r = 0; r < 14; r++) {
     for (let i = 0; i < 16; i++) {
-      let b = j64[i].bigint + r64[r].bigint;
-      g[i].setxor64(bigintToU64(b << 56n));
+      let b = J64[i] + R64[r];
+      g[i].setxor64BigInt(b << 56n);
     }
     /* tslint:disable:no-bitwise */
     for (let uu = 0; uu < 16; uu++) {
@@ -631,6 +616,21 @@ u64.prototype.setxor64 = function (...args: u64[]) {
   return this;
 };
 
+u64.prototype.setxor64BigInt = function (...args: bigint[]) {
+  let a = args;
+  let i = a.length;
+  /* tslint:disable:no-bitwise */
+  let b = this.bigint;
+  while (i--) {
+    b = b ^ a[i];
+  }
+  const r = bigintToU64(b);
+  this.hi = r.hi;
+  this.lo = r.lo;
+  this.bigint = b;
+  return this;
+};
+
 export function u(h: any, l: any) {
   // @ts-expect-error
   return new u64(h, l);
@@ -644,48 +644,6 @@ export function xor64(...args: u64[]) {
       return acc ^ current;
     }, args[0].bigint);
   return bigintToU64(altern);
-}
-
-// this shouldn't be a problem, but who knows in the future javascript might support 64bits
-export function t32(x: any) {
-  /* tslint:disable:no-bitwise */
-  return x & 0xffffffff;
-  /* tslint:enable:no-bitwise */
-}
-
-export function rotl32(x: any, c: any) {
-  /* tslint:disable:no-bitwise */
-  return ((x << c) | (x >>> (32 - c))) & 0xffffffff;
-  /* tslint:enable:no-bitwise */
-}
-
-export function rotr32(x: any, c: any) {
-  return rotl32(x, 32 - c);
-}
-
-export function swap32(val: any): any {
-  /* tslint:disable:no-bitwise */
-  return ((val & 0xff) << 24) | ((val & 0xff00) << 8) | ((val >>> 8) & 0xff00) | ((val >>> 24) & 0xff);
-  /* tslint:enable:no-bitwise */
-}
-
-export function swap32Array(a: any) {
-  // can't do this with map because of support for IE8 (Don't hate me plz).
-  let i = 0;
-  let len = a.length;
-  let r = new Array(i);
-  while (i < len) {
-    r[i] = swap32(a[i]);
-    i++;
-  }
-  return r;
-}
-
-export function xnd64(x: any, y: any, z: any) {
-  /* tslint:disable:no-bitwise */
-  // @ts-expect-error
-  return new u64(x.hi ^ (~y.hi & z.hi), x.lo ^ (~y.lo & z.lo));
-  /* tslint:enable:no-bitwise */
 }
 
 export function bufferInsert(buffer: any, bufferOffset: any, data: any, len: any, dataOffset: number = 0) {
@@ -707,38 +665,10 @@ export function bufferInsert64(buffer: any, bufferOffset: any, data: any, len: a
   }
 }
 
-export function bufferInsertBackwards(buffer: any, bufferOffset: any, data: any, len: any) {
-  let i = 0;
-  while (i < len) {
-    buffer[i + bufferOffset] = data[len - 1 - i];
-    i++;
-  }
-}
-
 export function bufferSet(buffer: any, bufferOffset: any, value: any, len: any) {
   let i = 0;
   while (i < len) {
     buffer[i + bufferOffset] = value;
-    i++;
-  }
-}
-
-export function bufferXORInsert(buffer: any, bufferOffset: any, data: any, dataOffset: any, len: any) {
-  let i = 0;
-  while (i < len) {
-    /* tslint:disable:no-bitwise */
-    buffer[i + bufferOffset] ^= data[i + dataOffset];
-    /* tslint:enable:no-bitwise */
-    i++;
-  }
-}
-
-export function xORTable(d: any, s1: any, s2: any, len: any) {
-  let i = 0;
-  while (i < len) {
-    /* tslint:disable:no-bitwise */
-    d[i] = s1[i] ^ s2[i];
-    /* tslint:enable:no-bitwise */
     i++;
   }
 }
