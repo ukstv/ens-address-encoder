@@ -161,7 +161,7 @@ function compress(int64buf: any, state: any) {
   for (let r = 0; r < 14; r++) {
     for (var i = 0; i < 16; i++) {
       let b = J64[i] + R64[r];
-      g[i].setxor64BigInt(b << 56n);
+      g[i].setxor64(b << 56n);
     }
 
     for (let uu = 0; uu < 16; uu++) {
@@ -185,7 +185,7 @@ function compress(int64buf: any, state: any) {
   }
   for (let r = 0; r < 14; r++) {
     for (let ii = 0; ii < 16; ii++) {
-      m[ii].setxor64BigInt(R64[r], NJ64[ii]);
+      m[ii].setxor64(R64[r], NJ64[ii]);
     }
     for (let uu = 0; uu < 16; uu++) {
       t[uu] = bigintToU64(
@@ -207,7 +207,7 @@ function compress(int64buf: any, state: any) {
     t = temp;
   }
   for (let uu = 0; uu < 16; uu++) {
-    state[uu].setxor64(g[uu], m[uu]);
+    state[uu].setxor64(g[uu].bigint, m[uu].bigint);
   }
 }
 
@@ -292,7 +292,7 @@ var final = function (state: any) {
   for (let r = 0; r < 14; r++) {
     for (let i = 0; i < 16; i++) {
       let b = J64[i] + R64[r];
-      g[i].setxor64BigInt(b << 56n);
+      g[i].setxor64(b << 56n);
     }
     /* tslint:disable:no-bitwise */
     for (let uu = 0; uu < 16; uu++) {
@@ -315,7 +315,7 @@ var final = function (state: any) {
     t = temp;
   }
   for (let uu = 0; uu < 16; uu++) {
-    state[uu].setxor64(g[uu]);
+    state[uu].setxor64(g[uu].bigint);
   }
 };
 
@@ -534,22 +534,9 @@ u64.prototype.clone = function () {
   return new u64(this.hi, this.lo);
 };
 
-u64.prototype.setxor64 = function (...args: u64[]) {
+u64.prototype.setxor64 = function (...args: bigint[]) {
   let a = args;
   let i = a.length;
-  /* tslint:disable:no-bitwise */
-  while (i--) {
-    this.hi ^= a[i].hi;
-    this.lo ^= a[i].lo;
-    this.bigint = this.bigint ^ a[i].bigint;
-  }
-  return this;
-};
-
-u64.prototype.setxor64BigInt = function (...args: bigint[]) {
-  let a = args;
-  let i = a.length;
-  /* tslint:disable:no-bitwise */
   let b = this.bigint;
   while (i--) {
     b = b ^ a[i];
