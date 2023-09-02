@@ -89,15 +89,15 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "EYg9j8ieF6BQzS9doHnjg3Faj7SdAhfqnV", hex: "a914aa423f4ab9ea252abc360ec1dada62ef2527245987" },
     ],
   },
-  // {
-  //   name: "GRS",
-  //   coinType: 17,
-  //   passingVectors: [
-  //     { text: "FeBhpvNkdtxC7K3LEVT8uqskzwC4mFYrhR", hex: "76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac" },
-  //     { text: "3Ai1JZ8pdJb2ksieUV8FsxSNVJCpiWuy6m", hex: "a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1887" },
-  //     { text: "grs1q9ks70lf7cz074lnn3p9ffyjfx8h0f3a8nz55sg", hex: "00142da1e7fd3ec09feafe73884a94924931eef4c7a7" },
-  //   ],
-  // },
+  {
+    name: "GRS",
+    coinType: 17,
+    passingVectors: [
+      { text: "FeBhpvNkdtxC7K3LEVT8uqskzwC4mFYrhR", hex: "76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac" },
+      { text: "3Ai1JZ8pdJb2ksieUV8FsxSNVJCpiWuy6m", hex: "a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1887" },
+      { text: "grs1q9ks70lf7cz074lnn3p9ffyjfx8h0f3a8nz55sg", hex: "00142da1e7fd3ec09feafe73884a94924931eef4c7a7" },
+    ],
+  },
   // {
   //   name: "DGB",
   //   coinType: 20,

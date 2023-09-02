@@ -3,7 +3,7 @@ import { base58check, bech32, utils, type Coder } from "@scure/base";
 import { sha256 } from "@noble/hashes/sha256";
 import { fromCoder, UnrecognizedAddressFormatError, type IFormat } from "./format.js";
 
-type B58CheckVersion = Uint8Array;
+export type B58CheckVersion = Uint8Array;
 
 export const BS58 = base58check(sha256);
 
@@ -70,7 +70,7 @@ export function makeBitcoinBase58Check(
   return utils.chain(versionedBitcoin(p2pkhVersions, p2shVersions), BS58);
 }
 
-function makeBech32Segwit(hrp: string): Coder<Uint8Array, string> {
+export function makeBech32Segwit(hrp: string): Coder<Uint8Array, string> {
   return {
     encode(data: Uint8Array): string {
       let version = data[0];

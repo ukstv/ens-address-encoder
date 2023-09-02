@@ -2,6 +2,7 @@ import type { IFormat } from "./format.js";
 import { BS58, makeBitcoinBase58Check, makeBitcoinCoder } from "./bitcoin.js";
 import { hexToBytes } from "@noble/hashes/utils";
 import { fromCoder } from "./format.js";
+import { groestlcoinChain } from "./groestl.js";
 
 const h = hexToBytes;
 export const FORMATS: Array<IFormat> = [
@@ -13,7 +14,7 @@ export const FORMATS: Array<IFormat> = [
   fromCoder("PPC", 6, makeBitcoinBase58Check([h("37")], [h("75")])),
   fromCoder("NMC", 7, BS58),
   fromCoder("VIA", 14, makeBitcoinBase58Check([h("47")], [h("21")])),
-  //   groestlcoinChain('GRS', 17, 'grs', [[0x24]], [[0x05]]),
+  groestlcoinChain("GRS", 17, "grs", [h("24")], [h("05")]),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
