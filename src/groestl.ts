@@ -4,7 +4,7 @@ import { base58 } from "@scure/base";
 // const bs58DecodeNoCheck = bs.bs58DecodeNoCheck
 // import { decode as bs58DecodeNoCheck, encode as bs58EncodeNoCheck } from "bs58";
 import type { IFormat } from "./format.js";
-import { concatBytes } from "@noble/hashes/utils";
+import { bytesToHex, concatBytes, hexToBytes, toBytes } from "@noble/hashes/utils";
 
 function makeGroestlcoinDecoder(
   hrp: string,
@@ -22,31 +22,12 @@ function makeGroestlcoinDecoder(
   };
 }
 
-function int32Buffer2Bytes(b: Array<number>): Array<number> {
-  let buffer = new Array(b.length);
-  let len = b.length;
-  let i = 0;
-  /* tslint:disable:no-bitwise */
-  while (i < len) {
-    buffer[i * 4] = (b[i] & 0xff000000) >>> 24;
-    buffer[i * 4 + 1] = (b[i] & 0x00ff0000) >>> 16;
-    buffer[i * 4 + 2] = (b[i] & 0x0000ff00) >>> 8;
-    buffer[i * 4 + 3] = b[i] & 0x000000ff;
-    i++;
-  }
-  /* tslint:enable:no-bitwise */
-  return buffer;
+function int32Buffer2Bytes(b: Array<number>): Uint8Array {
+  return concatBytes(...b.map(integerToBytes));
 }
 
-function string2bytes(s: string): Array<number> {
-  let len = s.length;
-  let b = new Array(len);
-  let i = 0;
-  while (i < len) {
-    b[i] = s.charCodeAt(i);
-    i++;
-  }
-  return b;
+function integerToBytes(i: number): Uint8Array {
+  return Uint8Array.of((i & 0xff000000) >> 24, (i & 0x00ff0000) >> 16, (i & 0x0000ff00) >> 8, (i & 0x000000ff) >> 0);
 }
 
 var groestl = function (ctx: any, data: any, len: any) {
@@ -243,15 +224,16 @@ var r64 = [
 
 var compress = function (int64buf: any, state: any) {
   var g = new Array(16);
-  var m = new Array(16);
+  var m: Array<u64> = new Array(16);
   for (let uu = 0; uu < 16; uu++) {
     m[uu] = int64buf[uu];
-    g[uu] = m[uu].xor(state[uu]);
+    g[uu] = bigintToU64(m[uu].bigint ^ state[uu].bigint);
   }
   var t = new Array(16);
   for (let r = 0; r < 14; r++) {
     for (var i = 0; i < 16; i++) {
-      g[i].setxor64(j64[i].plus(r64[r]).setShiftLeft(56));
+      let b = j64[i].bigint + r64[r].bigint;
+      g[i].setxor64(bigintToU64(b << 56n));
     }
 
     for (let uu = 0; uu < 16; uu++) {
@@ -324,7 +306,7 @@ function groestll(input: any, format: number, output: number) {
   } else if (format === 2) {
     msg = int32Buffer2Bytes(input);
   } else {
-    msg = string2bytes(input);
+    throw new Error(`Invalid format`);
   }
   var ctx: any = {};
   ctx.state = new Array(16);
@@ -344,46 +326,26 @@ function groestll(input: any, format: number, output: number) {
   if (output === 2) {
     out = r;
   } else if (output === 1) {
-    out = int32Buffer2Bytes(r);
+    throw new Error(`invalid output`);
   } else {
-    out = int32ArrayToHexString(r);
+    throw new Error(`invalid output`);
   }
   return out;
-}
-
-function int32ArrayToHexString(array: any) {
-  console.log('a.0')
-  let str = "";
-  let len = array.length;
-  for (let i = 0; i < len; i++) {
-    let s = array[i];
-    if (s < 0) {
-      s = 0xffffffff + array[i] + 1;
-    }
-    let l = s.toString(16);
-    let padding = 8;
-    while (l.length < padding) {
-      l = "0" + l;
-    }
-    str += l;
-  }
-  return str;
 }
 
 var groestlClose = function (ctx: any, a?: any, b?: any) {
   var buf = ctx.buffer;
   var ptr = ctx.ptr;
   var pad = new Array(136);
-  var len = buf.length;
   var padLen;
   var count;
   pad[0] = 0x80;
   if (ptr < 120) {
     padLen = 128 - ptr;
-    count = ctx.count.plus(u(0, 1));
+    count = bigintToU64(ctx.count.bigint + 1n);
   } else {
     padLen = 256 - ptr;
-    count = ctx.count.plus(u(0, 2));
+    count = bigintToU64(ctx.count.bigint + 2n);
   }
   bufferSet(pad, 1, 0, padLen - 9);
   bufferEncode64(pad, padLen - 8, count);
@@ -403,7 +365,8 @@ var final = function (state: any) {
   var t = new Array(16);
   for (let r = 0; r < 14; r++) {
     for (let i = 0; i < 16; i++) {
-      g[i].setxor64(j64[i].plus(r64[r]).setShiftLeft(56));
+      let b = j64[i].bigint + r64[r].bigint;
+      g[i].setxor64(bigintToU64(b << 56n));
     }
     /* tslint:disable:no-bitwise */
     for (let uu = 0; uu < 16; uu++) {
@@ -441,22 +404,11 @@ function bufferEncode64(buffer: any, offset: any, uint64: any) {
   /* tslint:enable:no-bitwise */
 }
 
-function groestl_2(str: string, format: number = 1, output: number = 1): string {
-  var a = groestll(str, format, 2);
+function grsCheckSumFn(str: Buffer): Uint8Array {
+  var a = groestll(str, 1, 2);
   a = groestll(a, 2, 2);
   a = a.slice(0, 8);
-  if (output === 2) {
-    return a;
-  } else if (output === 1) {
-    return int32Buffer2Bytes(a);
-  } else {
-    return int32ArrayToHexString(a);
-  }
-}
-
-function grsCheckSumFn(buffer: any): any {
-  const rtn: string = groestl_2(buffer)
-  return Buffer.from(rtn);
+  return int32Buffer2Bytes(a);
 }
 
 function bs58grscheckDecode(str: string): Buffer {
@@ -512,44 +464,40 @@ function makeGroestlcoinEncoder(
   const encodeBase58Check = makeBase58GrsCheckEncoder(p2pkhVersion, p2shVersion);
   return (data: Uint8Array) => {
     try {
-      return encodeBase58Check(Buffer.from(data));
+      return encodeBase58Check(data);
     } catch {
       return decodeBech32.encode(data);
     }
   };
 }
 
-function makeBase58GrsCheckEncoder(
-  p2pkhVersion: B58CheckVersion,
-  p2shVersion: B58CheckVersion,
-): (data: Buffer) => string {
-  return (data: Buffer) => {
-    let addr: Buffer;
-    switch (data.readUInt8(0)) {
-      case 0x76: // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
-        if (
-          data.readUInt8(1) !== 0xa9 ||
-          data.readUInt8(data.length - 2) !== 0x88 ||
-          data.readUInt8(data.length - 1) !== 0xac
-        ) {
+function makeBase58GrsCheckEncoder(p2pkhVersion: B58CheckVersion, p2shVersion: B58CheckVersion): IFormat["encode"] {
+  return (data0: Uint8Array) => {
+    switch (data0[0]) {
+      // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+      case 0x76: {
+        if (data0[1] !== 0xa9 || data0[data0.length - 2] !== 0x88 || data0[data0.length - 1] !== 0xac) {
           throw Error("Unrecognised address format");
         }
-        addr = Buffer.concat([Buffer.from(p2pkhVersion), data.slice(3, 3 + data.readUInt8(2))]);
+        const addr = concatBytes(p2pkhVersion, data0.subarray(3, 3 + data0[2]));
         return bs58grscheckEncode(addr);
-      case 0xa9: // P2SH: OP_HASH160 <scriptHash> OP_EQUAL
-        if (data.readUInt8(data.length - 1) !== 0x87) {
+      }
+      // P2SH: OP_HASH160 <scriptHash> OP_EQUAL
+      case 0xa9: {
+        if (data0[data0.length - 1] !== 0x87) {
           throw Error("Unrecognised address format");
         }
-        addr = Buffer.concat([Buffer.from(p2shVersion), data.slice(2, 2 + data.readUInt8(1))]);
+        const addr = concatBytes(p2shVersion, data0.subarray(2, 2 + data0[1]));
         return bs58grscheckEncode(addr);
+      }
       default:
         throw Error("Unrecognised address format");
     }
   };
 }
 
-function bs58grscheckEncode(payload: Buffer): string {
-  const checksum = grsCheckSumFn(payload);
+function bs58grscheckEncode(payload: Uint8Array): string {
+  const checksum = grsCheckSumFn(Buffer.from(payload));
   const concatBuffer = concatBytes(new Uint8Array(payload), new Uint8Array(checksum).subarray(0, 4));
   return base58.encode(concatBuffer);
 }
@@ -577,6 +525,7 @@ function decodeRaw(buffer: Buffer): Buffer {
 type u64 = {
   hi: number;
   lo: number;
+  bigint: bigint;
 };
 
 function u64(h: any, l: any) {
@@ -585,34 +534,10 @@ function u64(h: any, l: any) {
   this.hi = h >>> 0;
   // @ts-expect-error
   this.lo = l >>> 0;
+  // @ts-expect-error
+  this.bigint = BigInt("0x" + bytesToHex(concatBytes(integerToBytes(h), integerToBytes(l))));
   /* tslint:enable:no-bitwise */
 }
-
-u64.prototype.set = function (oWord: any) {
-  this.lo = oWord.lo;
-  this.hi = oWord.hi;
-};
-
-u64.prototype.add = function (oWord: any) {
-  let lowest;
-  let lowMid;
-  let highMid;
-  let highest; // four parts of the whole 64 bit number..
-
-  // need to add the respective parts from each number and the carry if on is present..
-  /* tslint:disable:no-bitwise */
-  lowest = (this.lo & 0xffff) + (oWord.lo & 0xffff);
-  lowMid = (this.lo >>> 16) + (oWord.lo >>> 16) + (lowest >>> 16);
-  highMid = (this.hi & 0xffff) + (oWord.hi & 0xffff) + (lowMid >>> 16);
-  highest = (this.hi >>> 16) + (oWord.hi >>> 16) + (highMid >>> 16);
-
-  // now set the hgih and the low accordingly..
-  this.lo = (lowMid << 16) | (lowest & 0xffff);
-  this.hi = (highest << 16) | (highMid & 0xffff);
-  /* tslint:enable:no-bitwise */
-
-  return this; // for chaining..
-};
 
 u64.prototype.addOne = function () {
   if (this.lo === -1 || this.lo === 0xffffffff) {
@@ -621,70 +546,44 @@ u64.prototype.addOne = function () {
   } else {
     this.lo++;
   }
+  this.bigint += 1n;
 };
 
-u64.prototype.plus = function (oWord: any) {
-  // @ts-expect-error
-  let c = new u64(0, 0);
-  let lowest;
-  let lowMid;
-  let highMid;
-  let highest; // four parts of the whole 64 bit number..
+function bigintToU64(i: bigint): u64 {
+  const hex = i.toString(16).padStart(16, "0");
+  const high = hex.substring(0, 8);
+  const low = hex.substring(8, 16);
+  const hi = Number(bytesToNumberBE(hexToBytes(high)));
+  const lo = Number(bytesToNumberBE(hexToBytes(low)));
+  return new u64(hi, lo);
+}
 
-  // need to add the respective parts from each number and the carry if on is present..
-  /* tslint:disable:no-bitwise */
-  lowest = (this.lo & 0xffff) + (oWord.lo & 0xffff);
-  lowMid = (this.lo >>> 16) + (oWord.lo >>> 16) + (lowest >>> 16);
-  highMid = (this.hi & 0xffff) + (oWord.hi & 0xffff) + (lowMid >>> 16);
-  highest = (this.hi >>> 16) + (oWord.hi >>> 16) + (highMid >>> 16);
+export function bytesToNumberBE(bytes: Uint8Array): bigint {
+  return hexToNumber(bytesToHex(bytes));
+}
 
-  // now set the hgih and the low accordingly..
-  c.lo = (lowMid << 16) | (lowest & 0xffff);
-  c.hi = (highest << 16) | (highMid & 0xffff);
-  /* tslint:enable:no-bitwise */
+export function numberToBytesLE(n: number | bigint, len: number): Uint8Array {
+  return numberToBytesBE(n, len).reverse();
+}
+export function numberToBytesBE(n: number | bigint, len: number): Uint8Array {
+  return hexToBytes(n.toString(16).padStart(len * 2, "0"));
+}
+const u8a = (a: any): a is Uint8Array => a instanceof Uint8Array;
 
-  return c; //for chaining..
-};
-
-u64.prototype.not = function () {
-  /* tslint:disable:no-bitwise */
-  // @ts-expect-error
-  return new u64(~this.hi, ~this.lo);
-  /* tslint:enable:no-bitwise */
-};
-
-u64.prototype.one = function () {
-  // @ts-expect-error
-  return new u64(0x0, 0x1);
-};
-
-u64.prototype.zero = function () {
-  // @ts-expect-error
-  return new u64(0x0, 0x0);
-};
-
-u64.prototype.neg = function () {
-  return this.not().plus(this.one());
-};
-
-u64.prototype.minus = function (oWord: any) {
-  return this.plus(oWord.neg());
-};
-
-u64.prototype.isZero = function () {
-  return this.lo === 0 && this.hi === 0;
-};
-
-function isLong(obj: any) {
-  // @ts-nocheck
-  return (obj && obj.__isLong__) === true;
+export function bytesToNumberLE(bytes: Uint8Array): bigint {
+  if (!u8a(bytes)) throw new Error("Uint8Array expected");
+  return hexToNumber(bytesToHex(Uint8Array.from(bytes).reverse()));
+}
+export function hexToNumber(hex: string): bigint {
+  if (typeof hex !== "string") throw new Error("hex string expected, got " + typeof hex);
+  // Big Endian
+  return BigInt(hex === "" ? "0" : `0x${hex}`);
 }
 
 // @ts-expect-error
 function fromNumber(value) {
   if (isNaN(value) || !isFinite(value)) {
-    // @ts-expect-error
-    return this.zero();
+    return bigintToU64(0n);
   }
   /* tslint:disable:no-bitwise */
   let pow32 = 1 << 32;
@@ -693,61 +592,6 @@ function fromNumber(value) {
   return new u64(value % pow32 | 0, (value / pow32) | 0);
   /* tslint:enable:no-bitwise */
 }
-
-// @ts-expect-error
-u64.prototype.multiply = function (multiplier) {
-  if (this.isZero()) {
-    return this.zero();
-  }
-  if (!isLong(multiplier)) {
-    multiplier = fromNumber(multiplier);
-  }
-  if (multiplier.isZero()) {
-    return this.zero();
-  }
-
-  // Divide each long into 4 chunks of 16 bits, and then add up 4x4 products.
-  // We can skip products that would overflow.
-
-  /* tslint:disable:no-bitwise */
-  let a48 = this.hi >>> 16;
-  let a32 = this.hi & 0xffff;
-  let a16 = this.lo >>> 16;
-  let a00 = this.lo & 0xffff;
-
-  let b48 = multiplier.hi >>> 16;
-  let b32 = multiplier.hi & 0xffff;
-  let b16 = multiplier.lo >>> 16;
-  let b00 = multiplier.lo & 0xffff;
-
-  let c48 = 0;
-  let c32 = 0;
-  let c16 = 0;
-  let c00 = 0;
-  c00 += a00 * b00;
-  c16 += c00 >>> 16;
-  c00 &= 0xffff;
-  c16 += a16 * b00;
-  c32 += c16 >>> 16;
-  c16 &= 0xffff;
-  c16 += a00 * b16;
-  c32 += c16 >>> 16;
-  c16 &= 0xffff;
-  c32 += a32 * b00;
-  c48 += c32 >>> 16;
-  c32 &= 0xffff;
-  c32 += a16 * b16;
-  c48 += c32 >>> 16;
-  c32 &= 0xffff;
-  c32 += a00 * b32;
-  c48 += c32 >>> 16;
-  c32 &= 0xffff;
-  c48 += a48 * b00 + a32 * b16 + a16 * b32 + a00 * b48;
-  c48 &= 0xffff;
-  // @ts-expect-error
-  return new u64((c48 << 16) | c32, (c16 << 16) | c00);
-  /* tslint:enable:no-bitwise */
-};
 
 // @ts-expect-error
 u64.prototype.shiftLeft = function (bits) {
@@ -769,190 +613,21 @@ u64.prototype.shiftLeft = function (bits) {
   return c; //for chaining..
 };
 
-// @ts-expect-error
-u64.prototype.setShiftLeft = function (bits) {
-  if (bits === 0) {
-    return this;
-  }
-  if (bits > 63) {
-    bits = bits % 64;
-  }
-  /* tslint:disable:no-bitwise */
-  if (bits > 31) {
-    this.hi = this.lo << (bits - 32);
-    this.lo = 0;
-  } else {
-    let toMoveUp = this.lo >>> (32 - bits);
-    this.lo <<= bits;
-    this.hi = (this.hi << bits) | toMoveUp;
-  }
-  /* tslint:enable:no-bitwise */
-  return this; // for chaining..
-};
-// Shifts this word by the given number of bits to the right (max 32)..
-// @ts-expect-error
-u64.prototype.shiftRight = function (bits) {
-  bits = bits % 64;
-  // @ts-expect-error
-  let c = new u64(0, 0);
-  /* tslint:disable:no-bitwise */
-  if (bits === 0) {
-    return this.clone();
-  } else if (bits >= 32) {
-    c.hi = 0;
-    c.lo = this.hi >>> (bits - 32);
-  } else {
-    let bitsOff32 = 32 - bits;
-    let toMoveDown = (this.hi << bitsOff32) >>> bitsOff32;
-    c.hi = this.hi >>> bits;
-    c.lo = (this.lo >>> bits) | (toMoveDown << bitsOff32);
-  }
-  /* tslint:enable:no-bitwise */
-  return c; // for chaining..
-};
-// Rotates the bits of this word round to the left (max 32)..
-// @ts-expect-error
-u64.prototype.rotateLeft = function (bits) {
-  if (bits > 32) {
-    return this.rotateRight(64 - bits);
-  }
-  /* tslint:disable:no-bitwise */
-  // @ts-expect-error
-  let c = new u64(0, 0);
-  if (bits === 0) {
-    c.lo = this.lo >>> 0;
-    c.hi = this.hi >>> 0;
-  } else if (bits === 32) {
-    //just switch high and low over in this case..
-    c.lo = this.hi;
-    c.hi = this.lo;
-  } else {
-    c.lo = (this.lo << bits) | (this.hi >>> (32 - bits));
-    c.hi = (this.hi << bits) | (this.lo >>> (32 - bits));
-  }
-  /* tslint:enable:no-bitwise */
-  return c; // for chaining..
-};
-
-// @ts-expect-error
-u64.prototype.setRotateLeft = function (bits) {
-  if (bits > 32) {
-    return this.setRotateRight(64 - bits);
-  }
-  /* tslint:disable:no-bitwise */
-  let newHigh;
-  if (bits === 0) {
-    return this;
-  } else if (bits === 32) {
-    //just switch high and low over in this case..
-    newHigh = this.lo;
-    this.lo = this.hi;
-    this.hi = newHigh;
-  } else {
-    newHigh = (this.hi << bits) | (this.lo >>> (32 - bits));
-    this.lo = (this.lo << bits) | (this.hi >>> (32 - bits));
-    this.hi = newHigh;
-  }
-  /* tslint:enable:no-bitwise */
-  return this; // for chaining..
-};
-// Rotates the bits of this word round to the right (max 32)..
-// @ts-expect-error
-u64.prototype.rotateRight = function (bits) {
-  if (bits > 32) {
-    return this.rotateLeft(64 - bits);
-  }
-  /* tslint:disable:no-bitwise */
-  // @ts-expect-error
-  let c = new u64(0, 0);
-  if (bits === 0) {
-    c.lo = this.lo >>> 0;
-    c.hi = this.hi >>> 0;
-  } else if (bits === 32) {
-    // just switch high and low over in this case..
-    c.lo = this.hi;
-    c.hi = this.lo;
-  } else {
-    c.lo = (this.hi << (32 - bits)) | (this.lo >>> bits);
-    c.hi = (this.lo << (32 - bits)) | (this.hi >>> bits);
-  }
-  /* tslint:enable:no-bitwise */
-  return c; // for chaining..
-};
-u64.prototype.setFlip = function () {
-  let newHigh;
-  newHigh = this.lo;
-  this.lo = this.hi;
-  this.hi = newHigh;
-  return this;
-};
-// Rotates the bits of this word round to the right (max 32)..
-u64.prototype.setRotateRight = function (bits: any) {
-  if (bits > 32) {
-    return this.setRotateLeft(64 - bits);
-  }
-
-  if (bits === 0) {
-    return this;
-  } else if (bits === 32) {
-    //just switch high and low over in this case..
-    let newHigh;
-    newHigh = this.lo;
-    this.lo = this.hi;
-    this.hi = newHigh;
-  } else {
-    /* tslint:disable:no-bitwise */
-    let newHigh = (this.lo << (32 - bits)) | (this.hi >>> bits);
-    this.lo = (this.hi << (32 - bits)) | (this.lo >>> bits);
-    /* tslint:enable:no-bitwise */
-    this.hi = newHigh;
-  }
-  return this; // for chaining..
-};
-// Xors this word with the given other..
-u64.prototype.xor = function (oWord: any) {
-  // @ts-expect-error
-  let c = new u64(0, 0);
-  /* tslint:disable:no-bitwise */
-  c.hi = this.hi ^ oWord.hi;
-  c.lo = this.lo ^ oWord.lo;
-  /* tslint:enable:no-bitwise */
-  return c; // for chaining..
-};
-// Xors this word with the given other..
-u64.prototype.setxorOne = function (oWord: any) {
-  /* tslint:disable:no-bitwise */
-  this.hi ^= oWord.hi;
-  this.lo ^= oWord.lo;
-  /* tslint:enable:no-bitwise */
-  return this; // for chaining..
-};
-// Ands this word with the given other..
-u64.prototype.and = function (oWord: any) {
-  // @ts-expect-error
-  let c = new u64(0, 0);
-  /* tslint:disable:no-bitwise */
-  c.hi = this.hi & oWord.hi;
-  c.lo = this.lo & oWord.lo;
-  /* tslint:enable:no-bitwise */
-  return c; //for chaining..
-};
-
 // Creates a deep copy of this Word..
 u64.prototype.clone = function () {
   // @ts-expect-error
   return new u64(this.hi, this.lo);
 };
 
-u64.prototype.setxor64 = function () {
-  let a = arguments;
+u64.prototype.setxor64 = function (...args: u64[]) {
+  let a = args;
   let i = a.length;
   /* tslint:disable:no-bitwise */
   while (i--) {
     this.hi ^= a[i].hi;
     this.lo ^= a[i].lo;
+    this.bigint = this.bigint ^ a[i].bigint;
   }
-  /* tslint:enable:no-bitwise */
   return this;
 };
 
@@ -961,31 +636,14 @@ export function u(h: any, l: any) {
   return new u64(h, l);
 }
 
-export function xor64(...args: any[]) {
-  let a = arguments;
-  let h = a[0].hi;
-  let l = a[0].lo;
-  let i = a.length - 1;
-  /* tslint:disable:no-bitwise */
-  do {
-    h ^= a[i].hi;
-    l ^= a[i].lo;
-    i--;
-  } while (i > 0);
-  /* tslint:enable:no-bitwise */
-  // @ts-expect-error
-  return new u64(h, l);
-}
-
-export function clone64Array(array: any) {
-  let i = 0;
-  let len = array.length;
-  let a = new Array(len);
-  while (i < len) {
-    a[i] = array[i];
-    i++;
-  }
-  return a;
+export function xor64(...args: u64[]) {
+  const altern = args
+    .map((a) => a.bigint)
+    .slice(1)
+    .reduceRight((acc, current) => {
+      return acc ^ current;
+    }, args[0].bigint);
+  return bigintToU64(altern);
 }
 
 // this shouldn't be a problem, but who knows in the future javascript might support 64bits
