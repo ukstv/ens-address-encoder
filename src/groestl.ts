@@ -294,7 +294,6 @@ var final = function (state: any) {
       let b = J64[i] + R64[r];
       g[i].setxor64(b << 56n);
     }
-    /* tslint:disable:no-bitwise */
     for (let uu = 0; uu < 16; uu++) {
       t[uu] = bigintToU64(
         xor64(
