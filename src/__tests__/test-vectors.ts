@@ -42,14 +42,14 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "ltc1qdp7p2rpx4a2f80h7a4crvppczgg4egmv5c78w8", hex: "0014687c150c26af5493befeed7036043812115ca36c" },
     ],
   },
-  // {
-  //   name: "DOGE",
-  //   coinType: 3,
-  //   passingVectors: [
-  //     { text: "DBXu2kgc3xtvCUWFcxFE3r9hEYgmuaaCyD", hex: "76a9144620b70031f0e9437e374a2100934fba4911046088ac" },
-  //     { text: "AF8ekvSf6eiSBRspJjnfzK6d1EM6pnPq3G", hex: "a914f8f5d99a9fc21aa676e74d15e7b8134557615bda87" },
-  //   ],
-  // },
+  {
+    name: "DOGE",
+    coinType: 3,
+    passingVectors: [
+      { text: "DBXu2kgc3xtvCUWFcxFE3r9hEYgmuaaCyD", hex: "76a9144620b70031f0e9437e374a2100934fba4911046088ac" },
+      { text: "AF8ekvSf6eiSBRspJjnfzK6d1EM6pnPq3G", hex: "a914f8f5d99a9fc21aa676e74d15e7b8134557615bda87" },
+    ],
+  },
   // {
   //   name: "RDD",
   //   coinType: 4,

@@ -21,6 +21,12 @@ function versionedBitcoin(
   const p2pkhVersion = p2pkhVersions[0];
   const p2shVersion = p2shVersions[0];
 
+  const P2PKH_PREFIX = new Uint8Array([0x76, 0xa9, 0x14]);
+  const P2PKH_SUFFIX = new Uint8Array([0x88, 0xac]);
+
+  const P2SH_PREFIX = new Uint8Array([0xa9, 0x14]);
+  const P2SH_SUFFIX = new Uint8Array([0x87]);
+
   return {
     encode(data: Uint8Array): Uint8Array {
       switch (data[0]) {
@@ -47,13 +53,9 @@ function versionedBitcoin(
         return version.every((value: number, index: number) => index < addr.length && value === addr[index]);
       };
       if (p2pkhVersions.some(checkVersion)) {
-        return concatBytes(
-          new Uint8Array([0x76, 0xa9, 0x14]),
-          addr.subarray(p2pkhVersions[0].length),
-          new Uint8Array([0x88, 0xac]),
-        );
+        return concatBytes(P2PKH_PREFIX, addr.subarray(p2pkhVersions[0].length), P2PKH_SUFFIX);
       } else if (p2shVersions.some(checkVersion)) {
-        return concatBytes(new Uint8Array([0xa9, 0x14]), addr.subarray(p2shVersions[0].length), new Uint8Array([0x87]));
+        return concatBytes(P2SH_PREFIX, addr.subarray(p2shVersions[0].length), P2SH_SUFFIX);
       }
       throw new UnrecognizedAddressFormatError();
     },
@@ -67,66 +69,56 @@ function makeBitcoinBase58Check(
   return utils.chain(versionedBitcoin(p2pkhVersions, p2shVersions), base58check(sha256));
 }
 
-function makeBech32SegwitEncoder(hrp: string): IFormat["encode"] {
-  return (data: Uint8Array) => {
-    let version = data[0];
-    if (version >= 0x51 && version <= 0x60) {
-      version -= 0x50;
-    } else if (version !== 0x00) {
-      throw new UnrecognizedAddressFormatError();
-    }
-    const words = [version].concat(bech32.toWords(data.subarray(2, data[1] + 2)));
-    return bech32.encode(hrp, words);
+function makeBech32Segwit(hrp: string): Coder<Uint8Array, string> {
+  return {
+    encode(data: Uint8Array): string {
+      let version = data[0];
+      if (version >= 0x51 && version <= 0x60) {
+        version -= 0x50;
+      } else if (version !== 0x00) {
+        throw new UnrecognizedAddressFormatError();
+      }
+      const words = [version].concat(bech32.toWords(data.subarray(2, data[1] + 2)));
+      return bech32.encode(hrp, words);
+    },
+    decode(data: string): Uint8Array {
+      const { prefix, words } = bech32.decode(data);
+      if (prefix !== hrp) {
+        throw Error("Unexpected human-readable part in bech32 encoded address");
+      }
+      const script = bech32.fromWords(words.slice(1));
+      let version = words[0];
+      if (version > 0x00) {
+        version += 0x50;
+      }
+      return concatBytes(new Uint8Array([version, script.length]), script);
+    },
   };
 }
 
-function makeBech32SegwitDecoder(hrp: string): IFormat["decode"] {
-  return (data: string) => {
-    const { prefix, words } = bech32.decode(data);
-    if (prefix !== hrp) {
-      throw Error("Unexpected human-readable part in bech32 encoded address");
-    }
-    const script = bech32.fromWords(words.slice(1));
-    let version = words[0];
-    if (version > 0) {
-      version += 0x50;
-    }
-    return concatBytes(new Uint8Array([version, script.length]), new Uint8Array(script));
-  };
-}
-
-function makeBitcoinEncoder(
-  hrp: string,
-  p2pkhVersions: Array<B58CheckVersion>,
-  p2shVersions: Array<B58CheckVersion>,
-): IFormat["encode"] {
-  const encodeBech32 = makeBech32SegwitEncoder(hrp);
-  const bitcoinBase58Check = makeBitcoinBase58Check(p2pkhVersions, p2shVersions);
-
-  return (data: Uint8Array) => {
-    try {
-      return bitcoinBase58Check.encode(data);
-    } catch {
-      return encodeBech32(data);
-    }
-  };
-}
-
-function makeBitcoinDecoder(
+function makeBitcoinCoder(
   hrp: string,
   p2pkhVersions: B58CheckVersion[],
   p2shVersions: B58CheckVersion[],
-): IFormat["decode"] {
-  const decodeBech32 = makeBech32SegwitDecoder(hrp);
-
+): Coder<Uint8Array, string> {
+  const bech32Segwit = makeBech32Segwit(hrp);
   const bitcoinBase58Check = makeBitcoinBase58Check(p2pkhVersions, p2shVersions);
 
-  return (data: string) => {
-    if (data.toLowerCase().startsWith(hrp + "1")) {
-      return decodeBech32(data);
-    } else {
-      return bitcoinBase58Check.decode(data);
-    }
+  return {
+    encode(data: Uint8Array): string {
+      try {
+        return bitcoinBase58Check.encode(data);
+      } catch {
+        return bech32Segwit.encode(data);
+      }
+    },
+    decode(data: string): Uint8Array {
+      if (data.toLowerCase().startsWith(hrp + "1")) {
+        return bech32Segwit.decode(data);
+      } else {
+        return bitcoinBase58Check.decode(data);
+      }
+    },
   };
 }
 
@@ -139,8 +131,20 @@ export function bitcoinChain(
 ): IFormat {
   return {
     coinType,
-    decode: makeBitcoinDecoder(hrp, p2pkhVersions, p2shVersions),
-    encode: makeBitcoinEncoder(hrp, p2pkhVersions, p2shVersions),
     name,
+    ...makeBitcoinCoder(hrp, p2pkhVersions, p2shVersions),
+  };
+}
+
+export function bitcoinBase58Chain(
+  name: string,
+  coinType: number,
+  p2pkhVersions: B58CheckVersion[],
+  p2shVersions: B58CheckVersion[],
+): IFormat {
+  return {
+    coinType,
+    name,
+    ...makeBitcoinBase58Check(p2pkhVersions, p2shVersions),
   };
 }
