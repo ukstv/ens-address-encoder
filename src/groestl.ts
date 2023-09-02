@@ -150,7 +150,7 @@ const NJ64 = [
 
 const R64 = [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 10n, 11n, 12n, 13n];
 
-var compress = function (int64buf: any, state: any) {
+function compress(int64buf: any, state: any) {
   var g = new Array(16);
   var m: Array<u64> = new Array(16);
   for (let uu = 0; uu < 16; uu++) {
@@ -166,15 +166,17 @@ var compress = function (int64buf: any, state: any) {
 
     for (let uu = 0; uu < 16; uu++) {
       /* tslint:disable:no-bitwise */
-      t[uu] = xor64(
-        bigintToU64(T0[B64(0, g[uu])]),
-        bigintToU64(T1[B64(1, g[(uu + 1) & 0xf])]),
-        bigintToU64(T2[B64(2, g[(uu + 2) & 0xf])]),
-        bigintToU64(T3[B64(3, g[(uu + 3) & 0xf])]),
-        bigintToU64(T4[B64(4, g[(uu + 4) & 0xf])]),
-        bigintToU64(T5[B64(5, g[(uu + 5) & 0xf])]),
-        bigintToU64(T6[B64(6, g[(uu + 6) & 0xf])]),
-        bigintToU64(T7[B64(7, g[(uu + 11) & 0xf])]),
+      t[uu] = bigintToU64(
+        xor64(
+          T0[B64(0, g[uu])],
+          T1[B64(1, g[(uu + 1) & 0xf])],
+          T2[B64(2, g[(uu + 2) & 0xf])],
+          T3[B64(3, g[(uu + 3) & 0xf])],
+          T4[B64(4, g[(uu + 4) & 0xf])],
+          T5[B64(5, g[(uu + 5) & 0xf])],
+          T6[B64(6, g[(uu + 6) & 0xf])],
+          T7[B64(7, g[(uu + 11) & 0xf])],
+        ),
       );
     }
     let temp = g;
@@ -186,15 +188,17 @@ var compress = function (int64buf: any, state: any) {
       m[ii].setxor64BigInt(R64[r], NJ64[ii]);
     }
     for (let uu = 0; uu < 16; uu++) {
-      t[uu] = xor64(
-        bigintToU64(T0[B64(0, m[(uu + 1) & 0xf])]),
-        bigintToU64(T1[B64(1, m[(uu + 3) & 0xf])]),
-        bigintToU64(T2[B64(2, m[(uu + 5) & 0xf])]),
-        bigintToU64(T3[B64(3, m[(uu + 11) & 0xf])]),
-        bigintToU64(T4[B64(4, m[(uu + 0) & 0xf])]),
-        bigintToU64(T5[B64(5, m[(uu + 2) & 0xf])]),
-        bigintToU64(T6[B64(6, m[(uu + 4) & 0xf])]),
-        bigintToU64(T7[B64(7, m[(uu + 6) & 0xf])]),
+      t[uu] = bigintToU64(
+        xor64(
+          T0[B64(0, m[(uu + 1) & 0xf])],
+          T1[B64(1, m[(uu + 3) & 0xf])],
+          T2[B64(2, m[(uu + 5) & 0xf])],
+          T3[B64(3, m[(uu + 11) & 0xf])],
+          T4[B64(4, m[(uu + 0) & 0xf])],
+          T5[B64(5, m[(uu + 2) & 0xf])],
+          T6[B64(6, m[(uu + 4) & 0xf])],
+          T7[B64(7, m[(uu + 6) & 0xf])],
+        ),
       );
     }
     /* tslint:enable:no-bitwise */
@@ -205,7 +209,7 @@ var compress = function (int64buf: any, state: any) {
   for (let uu = 0; uu < 16; uu++) {
     state[uu].setxor64(g[uu], m[uu]);
   }
-};
+}
 
 function bytes2Int64Buffer(b: any): any[] {
   if (!b) {
@@ -292,15 +296,17 @@ var final = function (state: any) {
     }
     /* tslint:disable:no-bitwise */
     for (let uu = 0; uu < 16; uu++) {
-      t[uu] = xor64(
-        bigintToU64(T0[B64(0, g[uu])]),
-        bigintToU64(T1[B64(1, g[(uu + 1) & 0xf])]),
-        bigintToU64(T2[B64(2, g[(uu + 2) & 0xf])]),
-        bigintToU64(T3[B64(3, g[(uu + 3) & 0xf])]),
-        bigintToU64(T4[B64(4, g[(uu + 4) & 0xf])]),
-        bigintToU64(T5[B64(5, g[(uu + 5) & 0xf])]),
-        bigintToU64(T6[B64(6, g[(uu + 6) & 0xf])]),
-        bigintToU64(T7[B64(7, g[(uu + 11) & 0xf])]),
+      t[uu] = bigintToU64(
+        xor64(
+          T0[B64(0, g[uu])],
+          T1[B64(1, g[(uu + 1) & 0xf])],
+          T2[B64(2, g[(uu + 2) & 0xf])],
+          T3[B64(3, g[(uu + 3) & 0xf])],
+          T4[B64(4, g[(uu + 4) & 0xf])],
+          T5[B64(5, g[(uu + 5) & 0xf])],
+          T6[B64(6, g[(uu + 6) & 0xf])],
+          T7[B64(7, g[(uu + 11) & 0xf])],
+        ),
       );
     }
     /* tslint:enable:no-bitwise */
@@ -555,19 +561,10 @@ u64.prototype.setxor64BigInt = function (...args: bigint[]) {
   return this;
 };
 
-export function u(h: any, l: any) {
-  // @ts-expect-error
-  return new u64(h, l);
-}
-
-export function xor64(...args: u64[]) {
-  const altern = args
-    .map((a) => a.bigint)
-    .slice(1)
-    .reduceRight((acc, current) => {
-      return acc ^ current;
-    }, args[0].bigint);
-  return bigintToU64(altern);
+export function xor64(...args: bigint[]): bigint {
+  return args.slice(1).reduceRight((acc, current) => {
+    return acc ^ current;
+  }, args[0]);
 }
 
 export function bufferInsert(buffer: any, bufferOffset: any, data: any, len: any, dataOffset: number = 0) {
