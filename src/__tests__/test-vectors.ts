@@ -50,29 +50,29 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "AF8ekvSf6eiSBRspJjnfzK6d1EM6pnPq3G", hex: "a914f8f5d99a9fc21aa676e74d15e7b8134557615bda87" },
     ],
   },
-  // {
-  //   name: "RDD",
-  //   coinType: 4,
-  //   passingVectors: [
-  //     { text: "RkQDYcqiv7mzQfNYMc8FfYv3dtQ8wuSGoM", hex: "76a914814089fb909f05918d54e530f0ad8e339a4edffe88ac" },
-  //     { text: "3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC", hex: "a914f815b036d9bbbce5e9f2a00abd1bf3dc91e9551087" },
-  //   ],
-  // },
-  // {
-  //   name: "DASH",
-  //   coinType: 5,
-  //   passingVectors: [
-  //     { text: "XtAG1982HcYJVibHxRZrBmdzL5YTzj4cA1", hex: "76a914bfa98bb8a919330c432e4ff16563c5ab449604ad88ac" },
-  //     { text: "7gks9gWVmGeir7m4MhsSxMzXC2eXXAuuRD", hex: "a9149d646d71f0815c0cfd8cd08aa9d391cd127f378687" },
-  //   ],
-  // },
-  // {
-  //   name: "PPC",
-  //   coinType: 6,
-  //   passingVectors: [
-  //     { text: "PRL8bojUujzDGA6HRapzprXWFxMyhpS7Za", hex: "76a914b7a1c4349e794ee3484b8f433a7063eb614dfdc788ac" },
-  //   ],
-  // },
+  {
+    name: "RDD",
+    coinType: 4,
+    passingVectors: [
+      { text: "RkQDYcqiv7mzQfNYMc8FfYv3dtQ8wuSGoM", hex: "76a914814089fb909f05918d54e530f0ad8e339a4edffe88ac" },
+      { text: "3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC", hex: "a914f815b036d9bbbce5e9f2a00abd1bf3dc91e9551087" },
+    ],
+  },
+  {
+    name: "DASH",
+    coinType: 5,
+    passingVectors: [
+      { text: "XtAG1982HcYJVibHxRZrBmdzL5YTzj4cA1", hex: "76a914bfa98bb8a919330c432e4ff16563c5ab449604ad88ac" },
+      { text: "7gks9gWVmGeir7m4MhsSxMzXC2eXXAuuRD", hex: "a9149d646d71f0815c0cfd8cd08aa9d391cd127f378687" },
+    ],
+  },
+  {
+    name: "PPC",
+    coinType: 6,
+    passingVectors: [
+      { text: "PRL8bojUujzDGA6HRapzprXWFxMyhpS7Za", hex: "76a914b7a1c4349e794ee3484b8f433a7063eb614dfdc788ac" },
+    ],
+  },
   // {
   //   name: "NMC",
   //   coinType: 7,
