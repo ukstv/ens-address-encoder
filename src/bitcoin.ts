@@ -1,10 +1,11 @@
-import type { IFormat } from "./format.type.js";
 import { concatBytes } from "@noble/hashes/utils";
 import { base58check, bech32, utils, type Coder } from "@scure/base";
 import { sha256 } from "@noble/hashes/sha256";
-import { UnrecognizedAddressFormatError } from "./format.type.js";
+import { fromCoder, UnrecognizedAddressFormatError, type IFormat } from "./format.js";
 
 type B58CheckVersion = Uint8Array;
+
+export const BS58 = base58check(sha256);
 
 // Supports version field of more than one byte
 // NOTE: Assumes all versions in p2pkhVersions[] or p2shVersions[] will have the same length
@@ -62,11 +63,11 @@ function versionedBitcoin(
   };
 }
 
-function makeBitcoinBase58Check(
+export function makeBitcoinBase58Check(
   p2pkhVersions: Array<B58CheckVersion>,
   p2shVersions: Array<B58CheckVersion>,
 ): Coder<Uint8Array, string> {
-  return utils.chain(versionedBitcoin(p2pkhVersions, p2shVersions), base58check(sha256));
+  return utils.chain(versionedBitcoin(p2pkhVersions, p2shVersions), BS58);
 }
 
 function makeBech32Segwit(hrp: string): Coder<Uint8Array, string> {
@@ -96,7 +97,7 @@ function makeBech32Segwit(hrp: string): Coder<Uint8Array, string> {
   };
 }
 
-function makeBitcoinCoder(
+export function makeBitcoinCoder(
   hrp: string,
   p2pkhVersions: B58CheckVersion[],
   p2shVersions: B58CheckVersion[],
@@ -129,11 +130,7 @@ export function bitcoinChain(
   p2pkhVersions: B58CheckVersion[],
   p2shVersions: B58CheckVersion[],
 ): IFormat {
-  return {
-    coinType,
-    name,
-    ...makeBitcoinCoder(hrp, p2pkhVersions, p2shVersions),
-  };
+  return fromCoder(name, coinType, makeBitcoinCoder(hrp, p2pkhVersions, p2shVersions));
 }
 
 export function bitcoinBase58Chain(
@@ -142,9 +139,5 @@ export function bitcoinBase58Chain(
   p2pkhVersions: B58CheckVersion[],
   p2shVersions: B58CheckVersion[],
 ): IFormat {
-  return {
-    coinType,
-    name,
-    ...makeBitcoinBase58Check(p2pkhVersions, p2shVersions),
-  };
+  return fromCoder(name, coinType, makeBitcoinBase58Check(p2pkhVersions, p2shVersions));
 }

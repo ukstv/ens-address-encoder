@@ -12,3 +12,12 @@ export class UnrecognizedAddressFormatError extends Error {
     super("Unrecognised address format");
   }
 }
+
+export function fromCoder(name: string, coinType: number, coder: BytesCoder): IFormat {
+  return {
+    name: name,
+    coinType: coinType,
+    encode: coder.encode,
+    decode: coder.decode,
+  };
+}
