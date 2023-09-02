@@ -307,17 +307,17 @@ var groestlClose = function (ctx: any, a?: any, b?: any) {
   var ptr = ctx.ptr;
   var pad = new Uint8Array(136);
   var padLen;
-  var count;
+  var count: bigint;
   pad[0] = 0x80;
   if (ptr < 120) {
     padLen = 128 - ptr;
-    count = bigintToU64(ctx.count.bigint + 1n);
+    count = ctx.count.bigint + 1n
   } else {
     padLen = 256 - ptr;
-    count = bigintToU64(ctx.count.bigint + 2n);
+    count = ctx.count.bigint + 2n
   }
   pad.set(new Array(padLen - 9).fill(0), 1);
-  pad.set(numberToBytesBE(count.bigint, 8), padLen - 8);
+  pad.set(numberToBytesBE(count, 8), padLen - 8);
   groestl(ctx, pad, padLen);
   final(ctx.state);
   var out = new Array(16);
