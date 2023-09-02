@@ -284,15 +284,8 @@ function bytes2Int64Buffer(b: any): any[] {
   return buffer;
 }
 
-function groestll(input: any, format: number, output: number) {
-  var msg;
-  if (format === 1) {
-    msg = input;
-  } else if (format === 2) {
-    msg = int32Buffer2Bytes(input);
-  } else {
-    throw new Error(`Invalid format`);
-  }
+function groestll(input: any) {
+  var msg = input;
   var ctx: any = {};
   ctx.state = new Array(16);
   for (var i = 0; i < 15; i++) {
@@ -306,22 +299,13 @@ function groestll(input: any, format: number, output: number) {
   ctx.count = new u64(0, 0);
   ctx.buffer = new Array(128);
   groestl(ctx, msg, msg.length);
-  let r = groestlClose(ctx, 0, 0);
-  var out;
-  if (output === 2) {
-    out = r;
-  } else if (output === 1) {
-    throw new Error(`invalid output`);
-  } else {
-    throw new Error(`invalid output`);
-  }
-  return out;
+  return groestlClose(ctx, 0, 0);
 }
 
 var groestlClose = function (ctx: any, a?: any, b?: any) {
   var buf = ctx.buffer;
   var ptr = ctx.ptr;
-  var pad = new Array(136);
+  var pad = new Uint8Array(136);
   var padLen;
   var count;
   pad[0] = 0x80;
@@ -332,8 +316,8 @@ var groestlClose = function (ctx: any, a?: any, b?: any) {
     padLen = 256 - ptr;
     count = bigintToU64(ctx.count.bigint + 2n);
   }
-  bufferSet(pad, 1, 0, padLen - 9);
-  bufferEncode64(pad, padLen - 8, count);
+  pad.set(new Array(padLen - 9).fill(0), 1);
+  pad.set(numberToBytesBE(count.bigint, 8), padLen - 8);
   groestl(ctx, pad, padLen);
   final(ctx.state);
   var out = new Array(16);
@@ -376,22 +360,9 @@ var final = function (state: any) {
   }
 };
 
-function bufferEncode64(buffer: any, offset: any, uint64: any) {
-  /* tslint:disable:no-bitwise */
-  buffer[offset] = uint64.hi >>> 24;
-  buffer[offset + 1] = (uint64.hi >>> 16) & 0xff;
-  buffer[offset + 2] = (uint64.hi >>> 8) & 0xff;
-  buffer[offset + 3] = uint64.hi & 0xff;
-  buffer[offset + 4] = uint64.lo >>> 24;
-  buffer[offset + 5] = (uint64.lo >>> 16) & 0xff;
-  buffer[offset + 6] = (uint64.lo >>> 8) & 0xff;
-  buffer[offset + 7] = uint64.lo & 0xff;
-  /* tslint:enable:no-bitwise */
-}
-
 function grsCheckSumFn(str: Buffer): Uint8Array {
-  var a = groestll(str, 1, 2);
-  a = groestll(a, 2, 2);
+  var a = groestll(str);
+  a = groestll(int32Buffer2Bytes(a));
   a = a.slice(0, 8);
   return int32Buffer2Bytes(a);
 }
@@ -661,14 +632,6 @@ export function bufferInsert64(buffer: any, bufferOffset: any, data: any, len: a
   let i = 0;
   while (i < len) {
     buffer[i + bufferOffset] = data[i].clone();
-    i++;
-  }
-}
-
-export function bufferSet(buffer: any, bufferOffset: any, value: any, len: any) {
-  let i = 0;
-  while (i < len) {
-    buffer[i + bufferOffset] = value;
     i++;
   }
 }
