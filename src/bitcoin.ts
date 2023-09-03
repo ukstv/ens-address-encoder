@@ -1,4 +1,4 @@
-import { concatBytes } from "@noble/hashes/utils";
+import { concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { base58check, bech32, utils, type Coder } from "@scure/base";
 import { sha256 } from "@noble/hashes/sha256";
 import { fromCoder, UnrecognizedAddressFormatError, type IFormat } from "./format.js";
@@ -7,9 +7,15 @@ export type B58CheckVersion = Uint8Array;
 
 export const BS58 = base58check(sha256);
 
+const P2PKH_PREFIX = hexToBytes("76a914");
+const P2PKH_SUFFIX = hexToBytes("88ac");
+
+const P2SH_PREFIX = hexToBytes("a914");
+const P2SH_SUFFIX = hexToBytes("87");
+
 // Supports version field of more than one byte
 // NOTE: Assumes all versions in p2pkhVersions[] or p2shVersions[] will have the same length
-function versionedBitcoin(
+export function versionedBitcoin(
   p2pkhVersions: Array<B58CheckVersion>,
   p2shVersions: Array<B58CheckVersion>,
 ): Coder<Uint8Array, Uint8Array> {
@@ -21,12 +27,6 @@ function versionedBitcoin(
 
   const p2pkhVersion = p2pkhVersions[0];
   const p2shVersion = p2shVersions[0];
-
-  const P2PKH_PREFIX = new Uint8Array([0x76, 0xa9, 0x14]);
-  const P2PKH_SUFFIX = new Uint8Array([0x88, 0xac]);
-
-  const P2SH_PREFIX = new Uint8Array([0xa9, 0x14]);
-  const P2SH_SUFFIX = new Uint8Array([0x87]);
 
   return {
     encode(data: Uint8Array): Uint8Array {

@@ -1,4 +1,4 @@
-import { B58CheckVersion, makeBech32Segwit } from "./bitcoin.js";
+import { B58CheckVersion, makeBech32Segwit, versionedBitcoin } from "./bitcoin.js";
 import { base58, base64, Coder, utils } from "@scure/base";
 
 // const bs58DecodeNoCheck = bs.bs58DecodeNoCheck
@@ -35,12 +35,12 @@ function makeGroestlcoinDecoder(
   p2shVersions: B58CheckVersion[],
 ): IFormat["decode"] {
   const decodeBech32 = makeBech32Segwit(hrp);
-  const decodeBase58Check = makeBase58GrsCheckDecoder(p2pkhVersions, p2shVersions);
+  const decodeBase58Check = makeBase58GroestlCheck(p2pkhVersions, p2shVersions);
   return (data: string) => {
     if (data.toLowerCase().startsWith(hrp + "1")) {
       return decodeBech32.decode(data);
     } else {
-      return decodeBase58Check(data);
+      return decodeBase58Check.decode(data);
     }
   };
 }
@@ -258,40 +258,32 @@ function final(state: Context["state"]) {
   }
 }
 
-function grsCheckSumFn(str: Uint8Array): Uint8Array {
-  return groestl(groestl(str)).subarray(0, 8);
+const groestlChecksum = utils.checksum(4, (payload) => groestl(groestl(payload)).subarray(0, 4));
+function makeBase58GroestlCheck(p2pkhVersions: B58CheckVersion[], p2shVersions: B58CheckVersion[]) {
+  return utils.chain(versionedBitcoin(p2pkhVersions, p2shVersions), groestlChecksum, base58);
 }
-
-function bs58grscheckDecode(str: string): Uint8Array {
-  const bytes = base58.decode(str);
-  const payload = decodeRaw(bytes);
-  if (payload.length === 0) {
-    throw new Error("Invalid checksum");
-  }
-  return payload;
-}
-
-function makeBase58GrsCheckDecoder(
+function makeGroestlCoder(
+  hrp: string,
   p2pkhVersions: B58CheckVersion[],
   p2shVersions: B58CheckVersion[],
-): (data: string) => Uint8Array {
-  const P2PKH_PREFIX = hexToBytes("76a914");
-  const P2PKH_SUFFIX = hexToBytes("88ac");
-
-  const P2SH_PREFIX = hexToBytes("a914");
-  const P2SH_SUFFIX = hexToBytes("87");
-
-  return (data: string) => {
-    const addr = bs58grscheckDecode(data);
-    const checkVersion = (version: B58CheckVersion) => {
-      return version.every((value: number, index: number) => index < addr.length && value === addr[index]);
-    };
-    if (p2pkhVersions.some(checkVersion)) {
-      return concatBytes(P2PKH_PREFIX, addr.subarray(p2pkhVersions[0].length), P2PKH_SUFFIX);
-    } else if (p2shVersions.some(checkVersion)) {
-      return concatBytes(P2SH_PREFIX, addr.subarray(p2shVersions[0].length), P2SH_SUFFIX);
-    }
-    throw Error("Unrecognised address format");
+): Coder<Uint8Array, string> {
+  const bech32Segwit = makeBech32Segwit(hrp);
+  const base58GroestlCheck = makeBase58GroestlCheck(p2pkhVersions, p2shVersions);
+  return {
+    encode(from: Uint8Array): string {
+      try {
+        return base58GroestlCheck.encode(from);
+      } catch {
+        return bech32Segwit.encode(from);
+      }
+    },
+    decode(to: string): Uint8Array {
+      if (to.toLowerCase().startsWith(hrp + "1")) {
+        return bech32Segwit.decode(to);
+      } else {
+        return base58GroestlCheck.decode(to);
+      }
+    },
   };
 }
 
@@ -301,77 +293,15 @@ export const groestlcoinChain = (
   hrp: string,
   p2pkhVersions: B58CheckVersion[],
   p2shVersions: B58CheckVersion[],
-): IFormat => ({
-  coinType,
-  decode: makeGroestlcoinDecoder(hrp, p2pkhVersions, p2shVersions),
-  encode: makeGroestlcoinEncoder(hrp, p2pkhVersions[0], p2shVersions[0]),
-  name,
-});
-
-function makeGroestlcoinEncoder(
-  hrp: string,
-  p2pkhVersion: B58CheckVersion,
-  p2shVersion: B58CheckVersion,
-): (data: Uint8Array) => string {
-  const decodeBech32 = makeBech32Segwit(hrp);
-  const encodeBase58Check = makeBase58GrsCheckEncoder(p2pkhVersion, p2shVersion);
-  return (data: Uint8Array) => {
-    try {
-      return encodeBase58Check(data);
-    } catch {
-      return decodeBech32.encode(data);
-    }
+): IFormat => {
+  const coder = makeGroestlCoder(hrp, p2pkhVersions, p2shVersions);
+  return {
+    coinType,
+    decode: coder.decode,
+    encode: coder.encode,
+    name,
   };
-}
-
-function makeBase58GrsCheckEncoder(p2pkhVersion: B58CheckVersion, p2shVersion: B58CheckVersion): IFormat["encode"] {
-  return (data0: Uint8Array) => {
-    switch (data0[0]) {
-      // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
-      case 0x76: {
-        if (data0[1] !== 0xa9 || data0[data0.length - 2] !== 0x88 || data0[data0.length - 1] !== 0xac) {
-          throw Error("Unrecognised address format");
-        }
-        const addr = concatBytes(p2pkhVersion, data0.subarray(3, 3 + data0[2]));
-        return bs58grscheckEncode(addr);
-      }
-      // P2SH: OP_HASH160 <scriptHash> OP_EQUAL
-      case 0xa9: {
-        if (data0[data0.length - 1] !== 0x87) {
-          throw Error("Unrecognised address format");
-        }
-        const addr = concatBytes(p2shVersion, data0.subarray(2, 2 + data0[1]));
-        return bs58grscheckEncode(addr);
-      }
-      default:
-        throw Error("Unrecognised address format");
-    }
-  };
-}
-
-function bs58grscheckEncode(payload: Uint8Array): string {
-  const checksum = grsCheckSumFn(payload);
-  const concatBuffer = concatBytes(payload, checksum.subarray(0, 4));
-  return base58.encode(concatBuffer);
-}
-// Lifted from https://github.com/ensdomains/address-encoder/pull/239/commits/4872330fba558730108d7f1e0d197cfef3dd9ca6
-// https://github.com/groestlcoin/bs58grscheck
-function decodeRaw(bytes: Uint8Array): Uint8Array {
-  const payload = bytes.subarray(0, -4);
-  const checksum = bytes.subarray(-4);
-  const newChecksum = grsCheckSumFn(payload);
-  /* tslint:disable:no-bitwise */
-  if (
-    (checksum[0] ^ newChecksum[0]) |
-    (checksum[1] ^ newChecksum[1]) |
-    (checksum[2] ^ newChecksum[2]) |
-    (checksum[3] ^ newChecksum[3])
-  ) {
-    return new Uint8Array();
-  }
-  /* tslint:enable:no-bitwise */
-  return payload;
-}
+};
 
 export function bytesToNumberBE(bytes: Uint8Array): bigint {
   return hexToNumber(bytesToHex(bytes));
@@ -380,7 +310,6 @@ export function numberToBytesBE(n: number | bigint, len: number): Uint8Array {
   return hexToBytes(n.toString(16).padStart(len * 2, "0"));
 }
 export function hexToNumber(hex: string): bigint {
-  if (typeof hex !== "string") throw new Error("hex string expected, got " + typeof hex);
   // Big Endian
   return BigInt(hex === "" ? "0" : `0x${hex}`);
 }
