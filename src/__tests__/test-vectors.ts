@@ -185,11 +185,11 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "STrATiSwHPf36VbqWMUaduaN57A791YP9c", hex: "76a91447e5efb0d23a8ffa492d33df862a93e039ab622088ac" },
     ],
   },
-  // {
-  //   name: "ARK",
-  //   coinType: 111,
-  //   passingVectors: [{ text: "AKkCgA5To85YSAgJgxUw8dKJsHkCzsu2dy", hex: "172b8f8e3490db00c6cc0dda2d2b9626e681500e29" }],
-  // },
+  {
+    name: "ARK",
+    coinType: 111,
+    passingVectors: [{ text: "AKkCgA5To85YSAgJgxUw8dKJsHkCzsu2dy", hex: "172b8f8e3490db00c6cc0dda2d2b9626e681500e29" }],
+  },
   // {
   //   name: "ATOM",
   //   coinType: 118,

@@ -6,6 +6,7 @@ import { makeGroestlCoder } from "./chains/groestl";
 import { base32, base58 } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
 import { icxCoder } from "./chains/icx.js";
+import { arkCoder } from "./chains/ark.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -39,8 +40,7 @@ export const FORMATS: Array<IFormat> = [
   c("ICX", 74, icxCoder),
   c("XVG", 77, makeBitcoinBase58Check(h("1E"), h("21"))),
   c("STRAT", 105, makeBitcoinBase58Check(h("3F"), h("7D"))),
-  //   bitcoinBase58Chain('STRAT', 105, [[0x3F]], [[0x7D]]),
-  //   getConfig('ARK', 111, bs58Encode, arkAddressDecoder),
+  c("ARK", 111, arkCoder),
   //   bech32Chain('ATOM', 118, 'cosmos'),
   //   bech32Chain('ZIL', 119, 'zil'),
   //   bech32Chain('EGLD', 120, 'erd'),
