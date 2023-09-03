@@ -3,7 +3,16 @@ import { BS58, makeBitcoinBase58Check, makeBitcoinCoder } from "./bitcoin.js";
 import { hexToBytes } from "@noble/hashes/utils";
 import { fromCoder } from "./format.js";
 import { makeGroestlCoder } from "./groestl.js";
-import { base58 } from "@scure/base";
+import { base32, base58 } from "@scure/base";
+
+const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
+  return {
+    coinType,
+    decode,
+    encode,
+    name,
+  };
+};
 
 const h = (...hexes: Array<string>) => hexes.map(hexToBytes);
 const c = fromCoder;
@@ -20,8 +29,7 @@ export const FORMATS: Array<IFormat> = [
   c("DGB", 20, makeBitcoinCoder("dgb", h("1e"), h("3f"))),
   c("MONA", 22, makeBitcoinCoder("mona", h("32"), h("37", "05"))),
   c("DCR", 42, base58),
-  //   getConfig('DCR', 42, bs58EncodeNoCheck, bs58DecodeNoCheck),
-  //   getConfig('XEM', 43, b32encodeXemAddr, b32decodeXemAddr),
+  c("XEM", 43, base32),
   //   bitcoinBase58Chain('AIB', 55, [[0x17]], [[0x05]]),
   //   bitcoinChain('SYS', 57, 'sys', [[0x3f]], [[0x05]]),
 ];
