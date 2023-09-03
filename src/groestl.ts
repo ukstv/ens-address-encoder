@@ -265,10 +265,10 @@ var groestlClose = function (ctx: any, a?: any, b?: any) {
   return out;
 };
 
-var final = function (state: any) {
-  var g = new Array(16);
+var final = function (state: Array<u64>) {
+  var g = new Array<u64>(16);
   bufferInsert64(g, 0, state, 16);
-  var t = new Array(16);
+  var t = new Array<u64>(16);
   for (let r = 0; r < 14; r++) {
     for (let i = 0; i < 16; i++) {
       const b = J64[i] + R64[r];
@@ -294,7 +294,7 @@ var final = function (state: any) {
     t = temp;
   }
   for (let uu = 0; uu < 16; uu++) {
-    state[uu] = bigintToU64(xor64(state[uu].bigint, g[uu].bigint));
+    state[uu] = bigintToU64(state[uu].bigint ^ g[uu].bigint);
   }
 };
 
@@ -422,6 +422,7 @@ type u64 = {
   hi: number;
   lo: number;
   bigint: bigint;
+  clone(): u64;
 };
 
 function u64(h: any, l: any) {
@@ -478,7 +479,7 @@ export function bufferInsert(buffer: Uint8Array, bufferOffset: number, data: any
   }
 }
 
-export function bufferInsert64(buffer: any, bufferOffset: any, data: any, len: any) {
+export function bufferInsert64(buffer: Array<u64>, bufferOffset: number, data: Array<u64>, len: number) {
   let i = 0;
   while (i < len) {
     buffer[i + bufferOffset] = data[i].clone();
