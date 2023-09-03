@@ -162,14 +162,14 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "0x314159265dD8dbb310642f98f50C066173C1259b", hex: "314159265dd8dbb310642f98f50c066173c1259b" },
     ],
   },
-  // {
-  //   name: "ICX",
-  //   coinType: 74,
-  //   passingVectors: [
-  //     { text: "hx6b38701ddc411e6f4e84a04f6abade7661a207e2", hex: "006b38701ddc411e6f4e84a04f6abade7661a207e2" },
-  //     { text: "cxa4524257b3511fb9574009785c1f1e73cf4097e7", hex: "01a4524257b3511fb9574009785c1f1e73cf4097e7" },
-  //   ],
-  // },
+  {
+    name: "ICX",
+    coinType: 74,
+    passingVectors: [
+      { text: "hx6b38701ddc411e6f4e84a04f6abade7661a207e2", hex: "006b38701ddc411e6f4e84a04f6abade7661a207e2" },
+      { text: "cxa4524257b3511fb9574009785c1f1e73cf4097e7", hex: "01a4524257b3511fb9574009785c1f1e73cf4097e7" },
+    ],
+  },
   // {
   //   name: "XVG",
   //   coinType: 77,

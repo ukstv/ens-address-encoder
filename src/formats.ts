@@ -1,9 +1,9 @@
 import type { IFormat } from "./format.js";
 import { BS58, makeBitcoinBase58Check, makeBitcoinCoder } from "./bitcoin.js";
-import { hexToBytes } from "@noble/hashes/utils";
+import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { fromCoder } from "./format.js";
 import { makeGroestlCoder } from "./groestl.js";
-import { base32, base58 } from "@scure/base";
+import { base32, base58, BytesCoder } from "@scure/base";
 import { makeChecksummedHexCoder } from "./eth.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
@@ -13,6 +13,34 @@ const getConfig = (name: string, coinType: number, encode: IFormat["encode"], de
     encode,
     name,
   };
+};
+
+const icxCoder: BytesCoder = {
+  encode(data: Uint8Array) {
+    if (data.length !== 21) {
+      throw Error("Unrecognised address format");
+    }
+    switch (data[0]) {
+      case 0x00:
+        return "hx" + bytesToHex(data.slice(1));
+      case 0x01:
+        return "cx" + bytesToHex(data.slice(1));
+      default:
+        throw Error("Unrecognised address format");
+    }
+  },
+  decode(data: string): Uint8Array {
+    const prefix = data.substring(0, 2);
+    const body = data.substring(2);
+    switch (prefix) {
+      case "hx":
+        return concatBytes(new Uint8Array([0x00]), hexToBytes(body));
+      case "cx":
+        return concatBytes(new Uint8Array([0x01]), hexToBytes(body));
+      default:
+        throw Error("Unrecognised address format");
+    }
+  },
 };
 
 const h = (...hexes: Array<string>) => hexes.map(hexToBytes);
@@ -35,7 +63,7 @@ export const FORMATS: Array<IFormat> = [
   c("SYS", 57, makeBitcoinCoder("sys", h("3f"), h("05"))),
   c("ETH", 60, makeChecksummedHexCoder()),
   c("ETC_LEGACY", 61, makeChecksummedHexCoder()),
-  // getConfig('ICX', 74, icxAddressEncoder, icxAddressDecoder),
+  c("ICX", 74, icxCoder),
   //   bitcoinBase58Chain('XVG',77, [[0x1E]], [[0x21]]),
   //   bitcoinBase58Chain('STRAT', 105, [[0x3F]], [[0x7D]]),
   //   getConfig('ARK', 111, bs58Encode, arkAddressDecoder),
