@@ -113,6 +113,10 @@ function B64(n: number, x: u64): number {
   return numberToBytesBE(x.bigint, 8)[n];
 }
 
+function B64A(n: number, x: bigint): number {
+  return numberToBytesBE(x, 8)[n];
+}
+
 const J64 = [
   0x00n,
   0x10n,
