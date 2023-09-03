@@ -29,13 +29,6 @@ function makeGroestlcoinDecoder(
   };
 }
 
-function int32Buffer2Bytes(b: Array<number> | Uint8Array): Uint8Array {
-  if (b instanceof Uint8Array) {
-    return b;
-  }
-  return concatBytes(...b.map(integerToBytes));
-}
-
 function integerToBytes(i: number): Uint8Array {
   return Uint8Array.of((i & 0xff000000) >> 24, (i & 0x00ff0000) >> 16, (i & 0x0000ff00) >> 8, (i & 0x000000ff) >> 0);
 }
@@ -55,7 +48,7 @@ function groestl(ctx: Context, data: Uint8Array, len: number) {
     if (clen > len) {
       clen = len;
     }
-    bufferInsert(buf, ptr, data, clen);
+    buf.set(data.subarray(0, clen), ptr);
     ptr += clen;
     data = data.slice(clen);
     len -= clen;
@@ -238,7 +231,7 @@ function groestll(input: Uint8Array): Uint8Array {
   return groestlClose(ctx, 0, 0);
 }
 
-function groestlClose(ctx: any, a?: any, b?: any): Uint8Array {
+function groestlClose(ctx: Context, a?: any, b?: any): Uint8Array {
   const ptr = ctx.ptr;
   const pad = new Uint8Array(136);
   let padLen: number;
@@ -255,15 +248,14 @@ function groestlClose(ctx: any, a?: any, b?: any): Uint8Array {
   pad.set(numberToBytesBE(count, 8), padLen - 8);
   groestl(ctx, pad, padLen);
   final(ctx.state);
-  const out = new Array<number>(16);
+  const out = new Uint8Array(64);
   for (let uu = 0, v = 8; uu < 8; uu++, v++) {
-    out[2 * uu] = ctx.state[v].hi;
-    out[2 * uu + 1] = ctx.state[v].lo;
+    out.set(numberToBytesBE(ctx.state[v].bigint, 8), 8 * uu);
   }
-  return int32Buffer2Bytes(out);
+  return out;
 }
 
-function final(state: Array<u64>) {
+function final(state: Context["state"]) {
   let g = Array.from<bigint>({ length: 16 }).map((_, i) => state[i].bigint);
   let t = new Array<bigint>(16);
   for (let r = 0; r < 14; r++) {
@@ -451,15 +443,4 @@ export function xor64(...ns: bigint[]): bigint {
   return ns.slice(1).reduceRight((acc, current) => {
     return acc ^ current;
   }, ns[0]);
-}
-
-export function bufferInsert(buffer: Uint8Array, bufferOffset: number, data: any, len: any, dataOffset: number = 0) {
-  /* tslint:disable:no-bitwise */
-  dataOffset = dataOffset | 0;
-  /* tslint:enable:no-bitwise */
-  let i = 0;
-  while (i < len) {
-    buffer[i + bufferOffset] = data[i + dataOffset];
-    i++;
-  }
 }
