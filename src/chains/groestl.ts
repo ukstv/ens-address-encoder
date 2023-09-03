@@ -1,35 +1,20 @@
 import { makeBech32Segwit, versionedBitcoin, type B58CheckVersion, makeAltCoder } from "./bitcoin.js";
 import { base58, base64, Coder, utils } from "@scure/base";
-import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
+import { concatBytes } from "@noble/hashes/utils";
+import { B64, bytesToBigInt, numberToBytes } from "./numbers-bytes.js";
 
 // -- Utils first
 
-function bytesToNumberBE(bytes: Uint8Array): bigint {
-  return hexToNumber(bytesToHex(bytes));
-}
-function numberToBytesBE(n: number | bigint, len: number): Uint8Array {
-  return hexToBytes(n.toString(16).padStart(len * 2, "0"));
-}
-function hexToNumber(hex: string): bigint {
-  // Big Endian
-  return BigInt(hex === "" ? "0" : `0x${hex}`);
-}
-/**
- * Return n'th byte of x u64 number.
- */
-function B64(n: number, x: bigint): number {
-  return numberToBytesBE(x, 8)[n];
-}
 const bigintArrayBytes: Coder<Array<bigint>, Uint8Array> = {
   encode(from: Array<bigint>): Uint8Array {
-    return concatBytes(...from.map((b) => numberToBytesBE(b, 8)));
+    return concatBytes(...from.map((b) => numberToBytes(b, 8)));
   },
   decode(to: Uint8Array): Array<bigint> {
     const u64count = to.length / 8;
     const res = new Array<bigint>();
     for (let i = 0; i < u64count; i++) {
       const slice = to.subarray(i * 8, (i + 1) * 8);
-      const bigint = bytesToNumberBE(slice);
+      const bigint = bytesToBigInt(slice);
       res.push(bigint);
     }
     return res;
@@ -218,7 +203,7 @@ function groestlClose(ctx: Context): Uint8Array {
     count = ctx.count + 2;
   }
   pad.set(new Array(padLen - 9).fill(0), 1);
-  pad.set(numberToBytesBE(count, 8), padLen - 8);
+  pad.set(numberToBytes(count, 8), padLen - 8);
   groestlInternal(ctx, pad.subarray(0, padLen));
   final(ctx.state);
   return bigintArrayBytes.encode(ctx.state.slice(8, 16));

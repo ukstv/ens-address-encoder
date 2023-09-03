@@ -10,6 +10,7 @@ import { arkCoder } from "./chains/ark.js";
 import { makeBech32Coder } from "./chains/atom.js";
 import { zenCoder } from "./chains/zen.js";
 import { makeZcashCoder } from "./chains/zcash.js";
+import { liskCoder } from "./chains/lisk.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -50,7 +51,7 @@ export const FORMATS: Array<IFormat> = [
   c("ZEN", 121, zenCoder),
   c("XMR", 128, base58xmr),
   c("ZEC", 133, makeZcashCoder("zs", h("1CB8"), h("1CBD"))),
-  //   getConfig('LSK', 134, liskAddressEncoder, liskAddressDecoder),
+  c("LSK", 134, liskCoder),
   //   eosioChain('STEEM', 135, 'STM'),
   //   bitcoinBase58Chain('FIRO', 136, [[0x52]], [[0x07]]),
   c("RSK", 137, makeChecksummedHexCoder(30)),
