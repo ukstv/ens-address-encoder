@@ -54,9 +54,9 @@ export const FORMATS: Array<IFormat> = [
   c("ZEC", 133, makeZcashCoder("zs", h("1CB8"), h("1CBD"))),
   c("LSK", 134, liskCoder),
   c("STEEM", 135, makeEosCoder("STM")),
-  //   bitcoinBase58Chain('FIRO', 136, [[0x52]], [[0x07]]),
+  c("FIRO", 136, makeBitcoinBase58Check(h("52"), h("07"))),
   c("RSK", 137, makeChecksummedHexCoder(30)),
-  // bitcoinBase58Chain('KMD', 141, [[0x3C]], [[0x55]]),
+  c("KMD", 141, makeBitcoinBase58Check(h("3C"), h("55"))),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(

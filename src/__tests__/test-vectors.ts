@@ -272,15 +272,15 @@ export const TEST_VECTORS: Array<TestVector> = [
       },
     ],
   },
-  // {
-  //   name: "FIRO",
-  //   coinType: 136,
-  //   passingVectors: [
-  //     { text: "aJpBLBFFkxY1iGfBmZCTWQQABPqakQwWZ3", hex: "76a914c6870ff00109a0aaca255e609de7d40d245aa61788ac" },
-  //     { text: "a4roLhCKc2m3RtG7ucoxyJrCk2JqayqdSr", hex: "76a9142d743121ff929299be3c4488ce64e22634d58d5f88ac" },
-  //     { text: "Zzn3ivpQZ3XoTnEBUuqPuVCMJ3JBGoxmsi", hex: "76a91400ad9d984a8217ffe6548ef5c91b12e6c8d2c10788ac" },
-  //   ],
-  // },
+  {
+    name: "FIRO",
+    coinType: 136,
+    passingVectors: [
+      { text: "aJpBLBFFkxY1iGfBmZCTWQQABPqakQwWZ3", hex: "76a914c6870ff00109a0aaca255e609de7d40d245aa61788ac" },
+      { text: "a4roLhCKc2m3RtG7ucoxyJrCk2JqayqdSr", hex: "76a9142d743121ff929299be3c4488ce64e22634d58d5f88ac" },
+      { text: "Zzn3ivpQZ3XoTnEBUuqPuVCMJ3JBGoxmsi", hex: "76a91400ad9d984a8217ffe6548ef5c91b12e6c8d2c10788ac" },
+    ],
+  },
   {
     name: "RSK",
     coinType: 137,
@@ -298,13 +298,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       },
     ],
   },
-  // {
-  //   name: "KMD",
-  //   coinType: 141,
-  //   passingVectors: [
-  //     { text: "RDNC9mLrN48pVGDQ5jSoPb2nRsUPJ5t2R7", hex: "76a9142cd2a4e3d1c2738ee4fce61e73ea822dcaacb9b488ac" },
-  //   ],
-  // },
+  {
+    name: "KMD",
+    coinType: 141,
+    passingVectors: [
+      { text: "RDNC9mLrN48pVGDQ5jSoPb2nRsUPJ5t2R7", hex: "76a9142cd2a4e3d1c2738ee4fce61e73ea822dcaacb9b488ac" },
+    ],
+  },
   // {
   //   name: "XRP",
   //   coinType: 144,
