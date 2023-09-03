@@ -262,16 +262,16 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "4980451641598555896L", hex: "451e1e61667e36f8" },
     ],
   },
-  // {
-  //   name: "STEEM",
-  //   coinType: 135,
-  //   passingVectors: [
-  //     {
-  //       text: "STM8QykigLRi9ZUcNy1iXGY3KjRuCiLM8Ga49LHti1F8hgawKFc3K",
-  //       hex: "03d0519ddad62bd2a833bee5dc04011c08f77f66338c38d99c685dee1f454cd1b8",
-  //     },
-  //   ],
-  // },
+  {
+    name: "STEEM",
+    coinType: 135,
+    passingVectors: [
+      {
+        text: "STM8QykigLRi9ZUcNy1iXGY3KjRuCiLM8Ga49LHti1F8hgawKFc3K",
+        hex: "03d0519ddad62bd2a833bee5dc04011c08f77f66338c38d99c685dee1f454cd1b8",
+      },
+    ],
+  },
   // {
   //   name: "FIRO",
   //   coinType: 136,
