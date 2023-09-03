@@ -219,19 +219,19 @@ function bytesToBigIntArray(b: Uint8Array): bigint[] {
 }
 
 function groestll(input: Uint8Array): Uint8Array {
-  var ctx: any = {};
-  // @ts-expect-error
-  ctx.state = new Array(16).fill(new u64(0, 0));
-  // @ts-expect-error
-  ctx.state[15] = new u64(0, 512);
-  ctx.ptr = 0;
-  ctx.count = 0;
-  ctx.buffer = new Uint8Array(128);
+  const state = new Array(16).fill(0n);
+  state[15] = 512n;
+  const ctx: Context = {
+    state: state.map((b) => bigintToU64(b)),
+    ptr: 0,
+    count: 0,
+    buffer: new Uint8Array(128),
+  };
   groestl(ctx, input, input.length);
-  return groestlClose(ctx, 0, 0);
+  return groestlClose(ctx);
 }
 
-function groestlClose(ctx: Context, a?: any, b?: any): Uint8Array {
+function groestlClose(ctx: Context): Uint8Array {
   const ptr = ctx.ptr;
   const pad = new Uint8Array(136);
   let padLen: number;
