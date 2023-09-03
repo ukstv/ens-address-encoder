@@ -17,7 +17,12 @@ export const FORMATS: Array<IFormat> = [
   c("VIA", 14, makeBitcoinBase58Check(h("47"), h("21"))),
   c("GRS", 17, makeGroestlCoder("grs", h("24"), h("05"))),
   c("DGB", 20, makeBitcoinCoder("dgb", h("1e"), h("3f"))),
-  // bitcoinChain('DGB', 20, 'dgb', [[0x1e]], [[0x3f]]),
+  c('MONA', 22, makeBitcoinCoder('mona', h('32'), h('37', '05'))),
+  c('DCR', 42, BS58)
+  //   getConfig('DCR', 42, bs58EncodeNoCheck, bs58DecodeNoCheck),
+  //   getConfig('XEM', 43, b32encodeXemAddr, b32decodeXemAddr),
+  //   bitcoinBase58Chain('AIB', 55, [[0x17]], [[0x05]]),
+  //   bitcoinChain('SYS', 57, 'sys', [[0x3f]], [[0x05]]),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
