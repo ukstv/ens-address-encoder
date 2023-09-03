@@ -268,32 +268,30 @@ function groestlClose(ctx: any, a?: any, b?: any): Uint8Array {
 }
 
 function final(state: Array<u64>) {
-  var g = Array.from<u64>({ length: 16 }).map((_, i) => state[i].clone());
-  var t = new Array<bigint>(16);
+  let g = Array.from<bigint>({ length: 16 }).map((_, i) => state[i].bigint);
+  let t = new Array<bigint>(16);
   for (let r = 0; r < 14; r++) {
     for (let i = 0; i < 16; i++) {
-      const b = J64[i] + R64[r];
-      g[i] = bigintToU64(xor64(g[i].bigint, b << 56n));
+      g[i] ^= (J64[i] + R64[r]) << 56n;
     }
     for (let uu = 0; uu < 16; uu++) {
       t[uu] = xor64(
-        T0[B64(0, g[uu])],
-        T1[B64(1, g[(uu + 1) & 0xf])],
-        T2[B64(2, g[(uu + 2) & 0xf])],
-        T3[B64(3, g[(uu + 3) & 0xf])],
-        T4[B64(4, g[(uu + 4) & 0xf])],
-        T5[B64(5, g[(uu + 5) & 0xf])],
-        T6[B64(6, g[(uu + 6) & 0xf])],
-        T7[B64(7, g[(uu + 11) & 0xf])],
+        T0[B64A(0, g[uu])],
+        T1[B64A(1, g[(uu + 1) & 0xf])],
+        T2[B64A(2, g[(uu + 2) & 0xf])],
+        T3[B64A(3, g[(uu + 3) & 0xf])],
+        T4[B64A(4, g[(uu + 4) & 0xf])],
+        T5[B64A(5, g[(uu + 5) & 0xf])],
+        T6[B64A(6, g[(uu + 6) & 0xf])],
+        T7[B64A(7, g[(uu + 11) & 0xf])],
       );
     }
-    /* tslint:enable:no-bitwise */
-    var temp = g;
-    g = t.map((r) => bigintToU64(r));
-    t = temp.map((u) => u.bigint);
+    const temp = g;
+    g = t;
+    t = temp;
   }
   for (let uu = 0; uu < 16; uu++) {
-    state[uu] = bigintToU64(state[uu].bigint ^ g[uu].bigint);
+    state[uu] = bigintToU64(state[uu].bigint ^ g[uu]);
   }
 }
 
