@@ -11,6 +11,9 @@ dependencies:
   bech32:
     specifier: ^2.0.0
     version: 2.0.0
+  big-integer:
+    specifier: ^1.6.51
+    version: 1.6.51
   bs58:
     specifier: ^5.0.0
     version: 5.0.0
@@ -97,6 +100,11 @@ packages:
 
   /big-integer@1.6.36:
     resolution: {integrity: sha512-t70bfa7HYEA1D9idDbmuv7YbsbVkQ+Hp+8KFSul4aE5e/i1bjCNIRYJZlA8Q8p0r9T8cF/RVvwUgRA//FydEyg==}
+    engines: {node: '>=0.6'}
+    dev: false
+
+  /big-integer@1.6.51:
+    resolution: {integrity: sha512-GPEid2Y9QU1Exl1rpO9B2IPJGHPSupF5GnVIP0blYvNOMer2bTvSWs1jGOUg04hTmu67nmLsQ9TBo1puaotBHg==}
     engines: {node: '>=0.6'}
     dev: false
 
