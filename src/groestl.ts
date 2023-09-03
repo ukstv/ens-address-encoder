@@ -270,14 +270,14 @@ function groestlClose(ctx: any, a?: any, b?: any): Uint8Array {
 function final(state: Array<u64>) {
   var g = new Array<u64>(16);
   bufferInsert64(g, 0, state, 16);
-  var t = new Array<u64>(16);
+  var t = new Array<bigint>(16);
   for (let r = 0; r < 14; r++) {
     for (let i = 0; i < 16; i++) {
       const b = J64[i] + R64[r];
       g[i] = bigintToU64(xor64(g[i].bigint, b << 56n));
     }
     for (let uu = 0; uu < 16; uu++) {
-      t[uu] = bigintToU64(
+      t[uu] = (
         xor64(
           T0[B64(0, g[uu])],
           T1[B64(1, g[(uu + 1) & 0xf])],
@@ -287,13 +287,13 @@ function final(state: Array<u64>) {
           T5[B64(5, g[(uu + 5) & 0xf])],
           T6[B64(6, g[(uu + 6) & 0xf])],
           T7[B64(7, g[(uu + 11) & 0xf])],
-        ),
+        )
       );
     }
     /* tslint:enable:no-bitwise */
     var temp = g;
-    g = t;
-    t = temp;
+    g = t.map(r => bigintToU64(r))
+    t = temp.map(u => u.bigint);
   }
   for (let uu = 0; uu < 16; uu++) {
     state[uu] = bigintToU64(state[uu].bigint ^ g[uu].bigint);
