@@ -36,7 +36,7 @@ function integerToBytes(i: number): Uint8Array {
 function groestl(ctx: Context, data: Uint8Array, len: number) {
   let buf = ctx.buffer;
   let ptr = ctx.ptr;
-  const V = Array.from<u64>({ length: 16 }).map((_, index) => ctx.state[index]);
+  const V = Array.from<bigint>({ length: 16 }).map((_, index) => ctx.state[index].bigint);
   if (len < ctx.buffer.length - ptr) {
     buf.set(data, ptr);
     ptr += data.length;
@@ -58,7 +58,7 @@ function groestl(ctx: Context, data: Uint8Array, len: number) {
       ptr = 0;
     }
   }
-  ctx.state = V;
+  ctx.state = V.map((b) => bigintToU64(b));
   ctx.ptr = ptr;
 }
 
@@ -150,13 +150,13 @@ const NJ64 = [
 
 const R64 = [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 10n, 11n, 12n, 13n];
 
-function compress(bytes: Uint8Array, state: Array<u64>) {
+function compress(bytes: Uint8Array, state: Array<bigint>) {
   const int64buf = bytesToBigIntArray(bytes);
   let g = new Array<bigint>(16);
   let m = new Array<bigint>(16);
   for (let uu = 0; uu < 16; uu++) {
     m[uu] = int64buf[uu];
-    g[uu] = m[uu] ^ state[uu].bigint;
+    g[uu] = m[uu] ^ state[uu];
   }
   let t = new Array<bigint>(16);
   for (let r = 0; r < 14; r++) {
@@ -201,7 +201,7 @@ function compress(bytes: Uint8Array, state: Array<u64>) {
     t = temp;
   }
   for (let uu = 0; uu < 16; uu++) {
-    state[uu] = bigintToU64(state[uu].bigint ^ g[uu] ^ m[uu]);
+    state[uu] = state[uu] ^ g[uu] ^ m[uu];
   }
 }
 
