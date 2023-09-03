@@ -13,7 +13,7 @@ import { makeZcashCoder } from "./chains/zcash.js";
 import { liskCoder } from "./chains/lisk.js";
 import { makeEosCoder } from "./chains/eos.js";
 import { xrpCodec } from "./chains/xrp.js";
-import { cashaddrDecode, cashaddrEncode } from "crypto-addr-codec";
+import { bchCodec } from "./chains/bch.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -60,51 +60,8 @@ export const FORMATS: Array<IFormat> = [
   c("RSK", 137, makeChecksummedHexCoder(30)),
   c("KMD", 141, makeBitcoinBase58Check(h("3C"), h("55"))),
   c("XRP", 144, xrpCodec),
-  getConfig("BCH", 145, encodeCashAddr, decodeBitcoinCash),
+  c("BCH", 145, bchCodec),
 ];
-
-function encodeCashAddr(data0: Uint8Array): string {
-  switch (data0[0]) {
-    case 0x76: // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
-      if (data0[1] !== 0xa9 || data0[data0.length - 2] !== 0x88 || data0[data0.length - 1] !== 0xac) {
-        throw new UnrecognizedAddressFormatError();
-      }
-      return cashaddrEncode("bitcoincash", 0, Buffer.from(data0.subarray(3, 3 + data0[2])));
-    case 0xa9: // P2SH: OP_HASH160 <scriptHash> OP_EQUAL
-      if (data0[data0.length - 1] !== 0x87) {
-        throw new UnrecognizedAddressFormatError();
-      }
-      return cashaddrEncode("bitcoincash", 1, Buffer.from(data0.subarray(2, 2 + data0[1])));
-    default:
-      throw new UnrecognizedAddressFormatError();
-  }
-}
-
-function decodeBitcoinCash(data: string): Uint8Array {
-  const decodeBase58Check = makeBitcoinBase58Check(h("00"), h("05"));
-
-  try {
-    return decodeBase58Check.decode(data);
-  } catch {
-    return decodeCashAddr(data);
-  }
-}
-
-function decodeCashAddr(data: string): Uint8Array {
-  const T0_PREFIX = hexToBytes("76A914");
-  const T0_SUFFIX = hexToBytes("88AC");
-  const T1_PREFIX = hexToBytes("A914");
-  const T1_SUFFIX = hexToBytes("87");
-  const { prefix, type, hash } = cashaddrDecode(data);
-  switch (type) {
-    case 0:
-      return concatBytes(T0_PREFIX, new Uint8Array(hash), T0_SUFFIX);
-    case 1:
-      return concatBytes(T1_PREFIX, new Uint8Array(hash), T1_SUFFIX);
-    default:
-      throw new UnrecognizedAddressFormatError();
-  }
-}
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
   FORMATS.map((f) => {
