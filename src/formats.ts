@@ -30,8 +30,8 @@ export const FORMATS: Array<IFormat> = [
   c("MONA", 22, makeBitcoinCoder("mona", h("32"), h("37", "05"))),
   c("DCR", 42, base58),
   c("XEM", 43, base32),
-  //   bitcoinBase58Chain('AIB', 55, [[0x17]], [[0x05]]),
-  //   bitcoinChain('SYS', 57, 'sys', [[0x3f]], [[0x05]]),
+  c("AIB", 55, makeBitcoinBase58Check(h("17"), h("05"))),
+  c("SYS", 57, makeBitcoinCoder("sys", h("3f"), h("05"))),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
