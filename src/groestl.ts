@@ -267,7 +267,7 @@ function groestlClose(ctx: any, a?: any, b?: any): Uint8Array {
   return int32Buffer2Bytes(out);
 }
 
-var final = function (state: Array<u64>) {
+function final(state: Array<u64>) {
   var g = new Array<u64>(16);
   bufferInsert64(g, 0, state, 16);
   var t = new Array<u64>(16);
@@ -298,7 +298,7 @@ var final = function (state: Array<u64>) {
   for (let uu = 0; uu < 16; uu++) {
     state[uu] = bigintToU64(state[uu].bigint ^ g[uu].bigint);
   }
-};
+}
 
 function grsCheckSumFn(str: Uint8Array): Uint8Array {
   const doubleDigest = groestll(groestll(str));
