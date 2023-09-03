@@ -8,7 +8,7 @@ import { bytesToHex, concatBytes, hexToBytes, toBytes } from "@noble/hashes/util
 
 type Context = {
   buffer: Uint8Array;
-  state: Array<u64>;
+  state: Array<bigint>;
   ptr: number;
   count: number;
 };
@@ -36,7 +36,7 @@ function integerToBytes(i: number): Uint8Array {
 function groestl(ctx: Context, data: Uint8Array, len: number) {
   let buf = ctx.buffer;
   let ptr = ctx.ptr;
-  const V = Array.from<bigint>({ length: 16 }).map((_, index) => ctx.state[index].bigint);
+  const V = Array.from<bigint>({ length: 16 }).map((_, index) => ctx.state[index]);
   if (len < ctx.buffer.length - ptr) {
     buf.set(data, ptr);
     ptr += data.length;
@@ -50,7 +50,7 @@ function groestl(ctx: Context, data: Uint8Array, len: number) {
     }
     buf.set(data.subarray(0, clen), ptr);
     ptr += clen;
-    data = data.slice(clen);
+    data = data.subarray(0, clen);
     len -= clen;
     if (ptr === ctx.buffer.length) {
       compress(buf, V);
@@ -58,7 +58,7 @@ function groestl(ctx: Context, data: Uint8Array, len: number) {
       ptr = 0;
     }
   }
-  ctx.state = V.map((b) => bigintToU64(b));
+  ctx.state = V;
   ctx.ptr = ptr;
 }
 
@@ -165,7 +165,6 @@ function compress(bytes: Uint8Array, state: Array<bigint>) {
     }
 
     for (let uu = 0; uu < 16; uu++) {
-      /* tslint:disable:no-bitwise */
       t[uu] =
         T0[B64(0, g[uu])] ^
         T1[B64(1, g[(uu + 1) & 0xf])] ^
@@ -176,9 +175,7 @@ function compress(bytes: Uint8Array, state: Array<bigint>) {
         T6[B64(6, g[(uu + 6) & 0xf])] ^
         T7[B64(7, g[(uu + 11) & 0xf])];
     }
-    let temp = g;
-    g = t;
-    t = temp;
+    [g, t] = [t, g];
   }
   for (let r = 0; r < 14; r++) {
     for (let ii = 0; ii < 16; ii++) {
@@ -195,10 +192,7 @@ function compress(bytes: Uint8Array, state: Array<bigint>) {
         T6[B64(6, m[(uu + 4) & 0xf])] ^
         T7[B64(7, m[(uu + 6) & 0xf])];
     }
-    /* tslint:enable:no-bitwise */
-    let temp = m;
-    m = t;
-    t = temp;
+    [m, t] = [t, m];
   }
   for (let uu = 0; uu < 16; uu++) {
     state[uu] = state[uu] ^ g[uu] ^ m[uu];
@@ -220,7 +214,7 @@ function groestll(input: Uint8Array): Uint8Array {
   const state = new Array(16).fill(0n);
   state[15] = 512n;
   const ctx: Context = {
-    state: state.map((b) => bigintToU64(b)),
+    state: state,
     ptr: 0,
     count: 0,
     buffer: new Uint8Array(128),
@@ -248,13 +242,13 @@ function groestlClose(ctx: Context): Uint8Array {
   final(ctx.state);
   const out2 = new Uint8Array(64);
   for (let i = 0; i < 8; i++) {
-    out2.set(numberToBytesBE(ctx.state[i + 8].bigint, 8), i * 8);
+    out2.set(numberToBytesBE(ctx.state[i + 8], 8), i * 8);
   }
   return out2;
 }
 
 function final(state: Context["state"]) {
-  let g = Array.from<bigint>({ length: 16 }).map((_, i) => state[i].bigint);
+  let g = Array.from<bigint>({ length: 16 }).map((_, i) => state[i]);
   let t = new Array<bigint>(16);
   for (let r = 0; r < 14; r++) {
     for (let i = 0; i < 16; i++) {
@@ -271,12 +265,10 @@ function final(state: Context["state"]) {
         T6[B64(6, g[(uu + 6) & 0xf])] ^
         T7[B64(7, g[(uu + 11) & 0xf])];
     }
-    const temp = g;
-    g = t;
-    t = temp;
+    [g, t] = [t, g];
   }
   for (let uu = 0; uu < 16; uu++) {
-    state[uu] = bigintToU64(state[uu].bigint ^ g[uu]);
+    state[uu] = state[uu] ^ g[uu];
   }
 }
 
@@ -396,33 +388,6 @@ function decodeRaw(bytes: Uint8Array): Uint8Array {
   return payload;
 }
 
-// u64
-
-type u64 = {
-  hi: number;
-  lo: number;
-  bigint: bigint;
-};
-
-function u64(h: number, l: number) {
-  /* tslint:disable:no-bitwise */
-  // @ts-expect-error
-  this.hi = h >>> 0;
-  // @ts-expect-error
-  this.lo = l >>> 0;
-  // @ts-expect-error
-  this.bigint = BigInt("0x" + bytesToHex(concatBytes(integerToBytes(h), integerToBytes(l))));
-  /* tslint:enable:no-bitwise */
-}
-
-function bigintToU64(i: bigint): u64 {
-  const hex = i.toString(16).padStart(16, "0");
-  const high = hex.substring(0, 8);
-  const low = hex.substring(8, 16);
-  const hi = Number(bytesToNumberBE(hexToBytes(high)));
-  const lo = Number(bytesToNumberBE(hexToBytes(low)));
-  return new u64(hi, lo);
-}
 export function bytesToNumberBE(bytes: Uint8Array): bigint {
   return hexToNumber(bytesToHex(bytes));
 }
