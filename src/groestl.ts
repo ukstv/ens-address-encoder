@@ -182,9 +182,9 @@ function compress(int64buf: Array<bigint>, state: Array<u64>) {
         T7[B64(7, g[(uu + 11) & 0xf])],
       );
     }
-    let temp = g.map((r) => bigintToU64(r));
+    let temp = g;
     g = t;
-    t = temp.map((r) => r.bigint);
+    t = temp;
   }
   for (let r = 0; r < 14; r++) {
     for (let ii = 0; ii < 16; ii++) {
