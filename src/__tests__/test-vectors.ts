@@ -177,14 +177,14 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "D7MKQnLxXEqn84PN42jWAVhvrXEuULLV9r", hex: "76a914183ffcc41f3095bea7ff324e52a65b46c74126e188ac" },
     ],
   },
-  // {
-  //   name: "STRAT",
-  //   coinType: 105,
-  //   passingVectors: [
-  //     { text: "SdMCMmLjD6NK8ssWt5nH2gtv6XkQXErBRs", hex: "76a914b01cb711ec63be7441c350907682a73d00bf7d2888ac" },
-  //     { text: "STrATiSwHPf36VbqWMUaduaN57A791YP9c", hex: "76a91447e5efb0d23a8ffa492d33df862a93e039ab622088ac" },
-  //   ],
-  // },
+  {
+    name: "STRAT",
+    coinType: 105,
+    passingVectors: [
+      { text: "SdMCMmLjD6NK8ssWt5nH2gtv6XkQXErBRs", hex: "76a914b01cb711ec63be7441c350907682a73d00bf7d2888ac" },
+      { text: "STrATiSwHPf36VbqWMUaduaN57A791YP9c", hex: "76a91447e5efb0d23a8ffa492d33df862a93e039ab622088ac" },
+    ],
+  },
   // {
   //   name: "ARK",
   //   coinType: 111,

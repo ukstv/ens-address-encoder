@@ -38,7 +38,7 @@ export const FORMATS: Array<IFormat> = [
   c("ETC_LEGACY", 61, makeChecksummedHexCoder()),
   c("ICX", 74, icxCoder),
   c("XVG", 77, makeBitcoinBase58Check(h("1E"), h("21"))),
-  //   bitcoinBase58Chain('XVG',77, [[0x1E]], [[0x21]]),
+  c("STRAT", 105, makeBitcoinBase58Check(h("3F"), h("7D"))),
   //   bitcoinBase58Chain('STRAT', 105, [[0x3F]], [[0x7D]]),
   //   getConfig('ARK', 111, bs58Encode, arkAddressDecoder),
   //   bech32Chain('ATOM', 118, 'cosmos'),
