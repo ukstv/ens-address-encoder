@@ -30,7 +30,7 @@ function integerToBytes(i: number): Uint8Array {
   return Uint8Array.of((i & 0xff000000) >> 24, (i & 0x00ff0000) >> 16, (i & 0x0000ff00) >> 8, (i & 0x000000ff) >> 0);
 }
 
-const groestl = (ctx: any, data: any, len: any) => {
+function groestl(ctx: any, data: any, len: any) {
   let buf;
   let ptr;
   //create a local copy of states
@@ -63,7 +63,7 @@ const groestl = (ctx: any, data: any, len: any) => {
   }
   ctx.state = V;
   ctx.ptr = ptr;
-};
+}
 
 const T0 = bytes2Int64Buffer(
   base64.decode(
@@ -432,16 +432,6 @@ function u64(h: any, l: any) {
   /* tslint:enable:no-bitwise */
 }
 
-u64.prototype.addOne = function () {
-  if (this.lo === -1 || this.lo === 0xffffffff) {
-    this.lo = 0;
-    this.hi++;
-  } else {
-    this.lo++;
-  }
-  this.bigint += 1n;
-};
-
 function bigintToU64(i: bigint): u64 {
   const hex = i.toString(16).padStart(16, "0");
   const high = hex.substring(0, 8);
@@ -485,26 +475,6 @@ function fromNumber(value) {
   return new u64(value % pow32 | 0, (value / pow32) | 0);
   /* tslint:enable:no-bitwise */
 }
-
-// @ts-expect-error
-u64.prototype.shiftLeft = function (bits) {
-  bits = bits % 64;
-  // @ts-expect-error
-  let c = new u64(0, 0);
-  /* tslint:disable:no-bitwise */
-  if (bits === 0) {
-    return this.clone();
-  } else if (bits > 31) {
-    c.lo = 0;
-    c.hi = this.lo << (bits - 32);
-  } else {
-    let toMoveUp = this.lo >>> (32 - bits);
-    c.lo = this.lo << bits;
-    c.hi = (this.hi << bits) | toMoveUp;
-  }
-  /* tslint:enable:no-bitwise */
-  return c; //for chaining..
-};
 
 // Creates a deep copy of this Word..
 u64.prototype.clone = function () {
