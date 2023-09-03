@@ -204,16 +204,16 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "zil139tkqvc8rw92e6jrs40gawwc3mmdmmauv3x3yz", hex: "89576033071b8aacea43855e8eb9d88ef6ddefbc" },
     ],
   },
-  // {
-  //   name: "EGLD",
-  //   coinType: 120,
-  //   passingVectors: [
-  //     {
-  //       text: "erd1qdzvfpa7gqjsnfhdxhvcp2mlysc80uz60yjhxre3lwl00q0jd4nqgauy9q",
-  //       hex: "0344c487be402509a6ed35d980ab7f243077f05a7925730f31fbbef781f26d66",
-  //     },
-  //   ],
-  // },
+  {
+    name: "EGLD",
+    coinType: 120,
+    passingVectors: [
+      {
+        text: "erd1qdzvfpa7gqjsnfhdxhvcp2mlysc80uz60yjhxre3lwl00q0jd4nqgauy9q",
+        hex: "0344c487be402509a6ed35d980ab7f243077f05a7925730f31fbbef781f26d66",
+      },
+    ],
+  },
   // {
   //   name: "ZEN",
   //   coinType: 121,

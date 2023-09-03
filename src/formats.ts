@@ -44,7 +44,7 @@ export const FORMATS: Array<IFormat> = [
   c("ARK", 111, arkCoder),
   c("ATOM", 118, makeBech32Coder("cosmos")),
   c("ZIL", 119, makeBech32Coder("zil")),
-  //   bech32Chain('EGLD', 120, 'erd'),
+  c("EGLD", 120, makeBech32Coder("erd")),
   //   getConfig('ZEN', 121, zenEncoder, zenDecoder),
   //   getConfig('XMR', 128, xmrAddressEncoder, xmrAddressDecoder),
   //   zcashChain('ZEC', 133, 'zs', [[0x1c, 0xb8]], [[0x1c, 0xbd]]),
