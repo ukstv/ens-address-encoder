@@ -22,7 +22,10 @@ function makeGroestlcoinDecoder(
   };
 }
 
-function int32Buffer2Bytes(b: Array<number>): Uint8Array {
+function int32Buffer2Bytes(b: Array<number> | Uint8Array): Uint8Array {
+  if (b instanceof Uint8Array) {
+    return b;
+  }
   return concatBytes(...b.map(integerToBytes));
 }
 
@@ -57,7 +60,7 @@ function groestl(ctx: any, data: any, len: any) {
     if (ptr === ctx.buffer.length) {
       const b = bytes2Int64Buffer(buf);
       compress(b, V);
-      ctx.count += 1n;
+      ctx.count += 1;
       ptr = 0;
     }
   }
@@ -223,35 +226,31 @@ function bytes2Int64Buffer(b: Uint8Array): bigint[] {
   return res;
 }
 
-function groestll(input: any) {
-  var msg = input;
+function groestll(input: Uint8Array): Uint8Array {
   var ctx: any = {};
-  ctx.state = new Array(16);
-  for (var i = 0; i < 15; i++) {
-    // @ts-expect-error
-    ctx.state[i] = new u64(0, 0);
-  }
+  // @ts-expect-error
+  ctx.state = new Array(16).fill(new u64(0, 0));
   // @ts-expect-error
   ctx.state[15] = new u64(0, 512);
   ctx.ptr = 0;
-  ctx.count = 0n;
+  ctx.count = 0;
   ctx.buffer = new Uint8Array(128);
-  groestl(ctx, msg, msg.length);
+  groestl(ctx, input, input.length);
   return groestlClose(ctx, 0, 0);
 }
 
-var groestlClose = function (ctx: any, a?: any, b?: any) {
+function groestlClose(ctx: any, a?: any, b?: any): Uint8Array {
   const ptr = ctx.ptr;
   const pad = new Uint8Array(136);
   let padLen: number;
-  let count: bigint;
+  let count: number;
   pad[0] = 0x80;
   if (ptr < 120) {
     padLen = 128 - ptr;
-    count = ctx.count + 1n;
+    count = ctx.count + 1;
   } else {
     padLen = 256 - ptr;
-    count = ctx.count + 2n;
+    count = ctx.count + 2;
   }
   pad.set(new Array(padLen - 9).fill(0), 1);
   pad.set(numberToBytesBE(count, 8), padLen - 8);
@@ -262,8 +261,8 @@ var groestlClose = function (ctx: any, a?: any, b?: any) {
     out[2 * uu] = ctx.state[v].hi;
     out[2 * uu + 1] = ctx.state[v].lo;
   }
-  return out;
-};
+  return int32Buffer2Bytes(out);
+}
 
 var final = function (state: Array<u64>) {
   var g = new Array<u64>(16);
@@ -299,13 +298,11 @@ var final = function (state: Array<u64>) {
 };
 
 function grsCheckSumFn(str: Uint8Array): Uint8Array {
-  var a = groestll(str);
-  a = groestll(int32Buffer2Bytes(a));
-  a = a.slice(0, 8);
-  return int32Buffer2Bytes(a);
+  const doubleDigest = groestll(groestll(str));
+  return doubleDigest.subarray(0, 8);
 }
 
-function bs58grscheckDecode(str: string): Buffer {
+function bs58grscheckDecode(str: string): Uint8Array {
   const bytes = base58.decode(str);
   const payload = decodeRaw(bytes);
   if (payload.length === 0) {
