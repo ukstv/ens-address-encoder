@@ -116,13 +116,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "mona1zw508d6qejxtdg4y5r3zarvaryvhm3vz7", hex: "5210751e76e8199196d454941c45d1b3a323" },
     ],
   },
-  // {
-  //   name: "DCR",
-  //   coinType: 42,
-  //   passingVectors: [
-  //     { text: "DsnBFk2BdqYP3WEmChpL7TSonhpxUAi8wiA", hex: "073fe8b089c48ba23c60c64c5226d47acfb26565e313934d5d73" },
-  //   ],
-  // },
+  {
+    name: "DCR",
+    coinType: 42,
+    passingVectors: [
+      { text: "DsnBFk2BdqYP3WEmChpL7TSonhpxUAi8wiA", hex: "073fe8b089c48ba23c60c64c5226d47acfb26565e313934d5d73" },
+    ],
+  },
   // {
   //   name: "XEM",
   //   coinType: 43,
