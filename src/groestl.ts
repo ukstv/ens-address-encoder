@@ -37,7 +37,7 @@ function groestl(ctx: any, data: any, len: any) {
   let buf;
   let ptr;
   //create a local copy of states
-  var V = new Array(16);
+  var V = new Array<u64>(16);
   buf = ctx.buffer;
   ptr = ctx.ptr;
   if (len < ctx.buffer.length - ptr) {
@@ -156,7 +156,7 @@ const NJ64 = [
 
 const R64 = [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 10n, 11n, 12n, 13n];
 
-function compress(int64buf: Array<bigint>, state: any) {
+function compress(int64buf: Array<bigint>, state: Array<u64>) {
   let g = new Array<bigint>(16);
   let m = new Array<bigint>(16);
   for (let uu = 0; uu < 16; uu++) {
@@ -448,12 +448,6 @@ export function hexToNumber(hex: string): bigint {
   // Big Endian
   return BigInt(hex === "" ? "0" : `0x${hex}`);
 }
-
-// Creates a deep copy of this Word..
-u64.prototype.clone = function () {
-  // @ts-expect-error
-  return new u64(this.hi, this.lo);
-};
 
 export function xor64(...ns: bigint[]): bigint {
   return ns.slice(1).reduceRight((acc, current) => {
