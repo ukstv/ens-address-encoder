@@ -16,6 +16,8 @@ export const FORMATS: Array<IFormat> = [
   c("NMC", 7, BS58),
   c("VIA", 14, makeBitcoinBase58Check(h("47"), h("21"))),
   c("GRS", 17, makeGroestlCoder("grs", h("24"), h("05"))),
+  c("DGB", 20, makeBitcoinCoder("dgb", h("1e"), h("3f"))),
+  // bitcoinChain('DGB', 20, 'dgb', [[0x1e]], [[0x3f]]),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
