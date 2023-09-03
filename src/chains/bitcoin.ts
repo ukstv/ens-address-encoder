@@ -1,5 +1,5 @@
 import { concatBytes, hexToBytes } from "@noble/hashes/utils";
-import { base58check, bech32, utils, type Coder } from "@scure/base";
+import { base58check, bech32, utils, type Coder, type BytesCoder } from "@scure/base";
 import { sha256 } from "@noble/hashes/sha256";
 import { fromCoder, UnrecognizedAddressFormatError, type IFormat } from "../format.js";
 
@@ -66,11 +66,11 @@ export function versionedBitcoin(
 export function makeBitcoinBase58Check(
   p2pkhVersions: Array<B58CheckVersion>,
   p2shVersions: Array<B58CheckVersion>,
-): Coder<Uint8Array, string> {
+): BytesCoder {
   return utils.chain(versionedBitcoin(p2pkhVersions, p2shVersions), BS58);
 }
 
-export function makeBech32Segwit(hrp: string): Coder<Uint8Array, string> {
+export function makeBech32Segwit(hrp: string): BytesCoder {
   return {
     encode(data: Uint8Array): string {
       let version = data[0];
@@ -101,7 +101,7 @@ export function makeBitcoinCoder(
   hrp: string,
   p2pkhVersions: B58CheckVersion[],
   p2shVersions: B58CheckVersion[],
-): Coder<Uint8Array, string> {
+): BytesCoder {
   const bech32Segwit = makeBech32Segwit(hrp);
   const bitcoinBase58Check = makeBitcoinBase58Check(p2pkhVersions, p2shVersions);
 
