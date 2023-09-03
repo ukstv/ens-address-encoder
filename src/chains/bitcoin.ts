@@ -99,6 +99,25 @@ export function makeBech32Segwit(hrp: string): BytesCoder {
   };
 }
 
+export function makeAltCoder(discriminator: string, base: BytesCoder, alt: BytesCoder): BytesCoder {
+  return {
+    encode(data: Uint8Array): string {
+      try {
+        return base.encode(data);
+      } catch {
+        return alt.encode(data);
+      }
+    },
+    decode(data: string): Uint8Array {
+      if (data.toLowerCase().startsWith(discriminator)) {
+        return alt.decode(data);
+      } else {
+        return base.decode(data);
+      }
+    },
+  };
+}
+
 export function makeBitcoinCoder(
   hrp: string,
   p2pkhVersions: B58CheckVersion[],
@@ -106,23 +125,7 @@ export function makeBitcoinCoder(
 ): BytesCoder {
   const bech32Segwit = makeBech32Segwit(hrp);
   const bitcoinBase58Check = makeBitcoinBase58Check(p2pkhVersions, p2shVersions);
-
-  return {
-    encode(data: Uint8Array): string {
-      try {
-        return bitcoinBase58Check.encode(data);
-      } catch {
-        return bech32Segwit.encode(data);
-      }
-    },
-    decode(data: string): Uint8Array {
-      if (data.toLowerCase().startsWith(hrp + "1")) {
-        return bech32Segwit.decode(data);
-      } else {
-        return bitcoinBase58Check.decode(data);
-      }
-    },
-  };
+  return makeAltCoder(hrp + "1", bitcoinBase58Check, bech32Segwit);
 }
 
 export function bitcoinChain(

@@ -1,4 +1,4 @@
-import { makeBech32Segwit, versionedBitcoin, type B58CheckVersion } from "./bitcoin.js";
+import { makeBech32Segwit, versionedBitcoin, type B58CheckVersion, makeAltCoder } from "./bitcoin.js";
 import { base58, base64, Coder, utils } from "@scure/base";
 import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
 
@@ -263,20 +263,5 @@ export function makeGroestlCoder(
 ): Coder<Uint8Array, string> {
   const bech32Segwit = makeBech32Segwit(hrp);
   const base58GroestlCheck = utils.chain(versionedBitcoin(p2pkhVersions, p2shVersions), groestlChecksum, base58);
-  return {
-    encode(from: Uint8Array): string {
-      try {
-        return base58GroestlCheck.encode(from);
-      } catch {
-        return bech32Segwit.encode(from);
-      }
-    },
-    decode(to: string): Uint8Array {
-      if (to.toLowerCase().startsWith(hrp + "1")) {
-        return bech32Segwit.decode(to);
-      } else {
-        return base58GroestlCheck.decode(to);
-      }
-    },
-  };
+  return makeAltCoder(hrp + "1", base58GroestlCheck, bech32Segwit);
 }
