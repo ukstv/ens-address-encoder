@@ -34,6 +34,22 @@ export const FORMATS: Array<IFormat> = [
   c("AIB", 55, makeBitcoinBase58Check(h("17"), h("05"))),
   c("SYS", 57, makeBitcoinCoder("sys", h("3f"), h("05"))),
   c("ETH", 60, makeChecksummedHexCoder()),
+  c("ETC_LEGACY", 61, makeChecksummedHexCoder()),
+  // getConfig('ICX', 74, icxAddressEncoder, icxAddressDecoder),
+  //   bitcoinBase58Chain('XVG',77, [[0x1E]], [[0x21]]),
+  //   bitcoinBase58Chain('STRAT', 105, [[0x3F]], [[0x7D]]),
+  //   getConfig('ARK', 111, bs58Encode, arkAddressDecoder),
+  //   bech32Chain('ATOM', 118, 'cosmos'),
+  //   bech32Chain('ZIL', 119, 'zil'),
+  //   bech32Chain('EGLD', 120, 'erd'),
+  //   getConfig('ZEN', 121, zenEncoder, zenDecoder),
+  //   getConfig('XMR', 128, xmrAddressEncoder, xmrAddressDecoder),
+  //   zcashChain('ZEC', 133, 'zs', [[0x1c, 0xb8]], [[0x1c, 0xbd]]),
+  //   getConfig('LSK', 134, liskAddressEncoder, liskAddressDecoder),
+  //   eosioChain('STEEM', 135, 'STM'),
+  //   bitcoinBase58Chain('FIRO', 136, [[0x52]], [[0x07]]),
+  c("RSK", 137, makeChecksummedHexCoder(30)),
+  // bitcoinBase58Chain('KMD', 141, [[0x3C]], [[0x55]]),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(

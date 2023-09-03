@@ -155,13 +155,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "0x314159265dD8dbb310642f98f50C066173C1259b", hex: "314159265dd8dbb310642f98f50c066173c1259b" },
     ],
   },
-  // {
-  //   name: "ETC_LEGACY",
-  //   coinType: 61,
-  //   passingVectors: [
-  //     { text: "0x314159265dD8dbb310642f98f50C066173C1259b", hex: "314159265dd8dbb310642f98f50c066173c1259b" },
-  //   ],
-  // },
+  {
+    name: "ETC_LEGACY",
+    coinType: 61,
+    passingVectors: [
+      { text: "0x314159265dD8dbb310642f98f50C066173C1259b", hex: "314159265dd8dbb310642f98f50c066173c1259b" },
+    ],
+  },
   // {
   //   name: "ICX",
   //   coinType: 74,
@@ -281,23 +281,23 @@ export const TEST_VECTORS: Array<TestVector> = [
   //     { text: "Zzn3ivpQZ3XoTnEBUuqPuVCMJ3JBGoxmsi", hex: "76a91400ad9d984a8217ffe6548ef5c91b12e6c8d2c10788ac" },
   //   ],
   // },
-  // {
-  //   name: "RSK",
-  //   coinType: 137,
-  //   passingVectors: [
-  //     { text: "0x5aaEB6053f3e94c9b9a09f33669435E7ef1bEAeD", hex: "5aaeb6053f3e94c9b9a09f33669435e7ef1beaed" },
-  //     {
-  //       text: "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
-  //       hex: "5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
-  //       canonical: "0x5aaEB6053f3e94c9b9a09f33669435E7ef1bEAeD",
-  //     },
-  //     {
-  //       text: "0x5AAEB6053F3E94C9B9A09F33669435E7EF1BEAED",
-  //       hex: "5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
-  //       canonical: "0x5aaEB6053f3e94c9b9a09f33669435E7ef1bEAeD",
-  //     },
-  //   ],
-  // },
+  {
+    name: "RSK",
+    coinType: 137,
+    passingVectors: [
+      { text: "0x5aaEB6053f3e94c9b9a09f33669435E7ef1bEAeD", hex: "5aaeb6053f3e94c9b9a09f33669435e7ef1beaed" },
+      {
+        text: "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+        hex: "5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+        canonical: "0x5aaEB6053f3e94c9b9a09f33669435E7ef1bEAeD",
+      },
+      {
+        text: "0x5AAEB6053F3E94C9B9A09F33669435E7EF1BEAED",
+        hex: "5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+        canonical: "0x5aaEB6053f3e94c9b9a09f33669435E7ef1bEAeD",
+      },
+    ],
+  },
   // {
   //   name: "KMD",
   //   coinType: 141,

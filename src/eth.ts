@@ -1,10 +1,15 @@
 import { type BytesCoder } from "@scure/base";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
-import { Keccak } from "sha3";
+import { keccak_256 } from "@noble/hashes/sha3";
 
 export const SLIP44_MSB = 0x80000000;
 
 export class EthereumChainIdError extends Error {}
+export class InvalidAddressChecksumError extends Error {
+  constructor() {
+    super("Invalid address checksum");
+  }
+}
 
 /**
  * @throws EthereumChainIdError
@@ -26,7 +31,19 @@ export function coinTypeToEthChainId(coinType: number): number {
   return ((SLIP44_MSB - 1) & coinType) >> 0;
 }
 
-export function makeChecksummedHexCoder(chainId?: string): BytesCoder {
+function stripHexPrefix(str: string): string {
+  return str.replace(/^0x/, "");
+}
+
+function isValidAddress(address: string): boolean {
+  return /^0x[0-9a-fA-F]{40}$/.test(address);
+}
+
+function isValidChecksumAddress(address: string, chainId?: number): boolean {
+  return isValidAddress(address) && toChecksumAddress(address, chainId) === address;
+}
+
+export function makeChecksummedHexCoder(chainId?: number): BytesCoder {
   return {
     encode(data: Uint8Array): string {
       return toChecksumAddress(bytesToHex(data), chainId);
@@ -38,38 +55,26 @@ export function makeChecksummedHexCoder(chainId?: string): BytesCoder {
         stripped !== stripped.toLowerCase() &&
         stripped !== stripped.toUpperCase()
       ) {
-        throw Error("Invalid address checksum");
+        throw new InvalidAddressChecksumError();
       }
       return hexToBytes(stripped);
     },
   };
 }
 
-function keccak(a: string) {
-  return new Keccak(256).update(a).digest();
-}
+function toChecksumAddress(address: string, chainId?: number) {
+  const stripped = stripHexPrefix(address).toLowerCase();
+  const prefix = chainId ? String(chainId) + "0x" : "";
+  const hashHex = bytesToHex(keccak_256(prefix + stripped));
 
-const toChecksumAddress = (address: string, chainId?: string) => {
-  if (typeof address !== "string") {
-    throw new Error("stripHexPrefix param must be type 'string', is currently type " + typeof address + ".");
-  }
-  const strip_address = stripHexPrefix(address).toLowerCase();
-  const prefix = chainId != null ? chainId.toString() + "0x" : "";
-  const keccak_hash = keccak(prefix + strip_address).toString("hex");
   let output = "0x";
-
-  for (let i = 0; i < strip_address.length; i++)
-    output += parseInt(keccak_hash[i], 16) >= 8 ? strip_address[i].toUpperCase() : strip_address[i];
+  for (let i = 0; i < stripped.length; i++) {
+    const gt8 = parseInt(hashHex[i], 16) >= 8;
+    if (gt8) {
+      output += stripped[i].toUpperCase();
+    } else {
+      output += stripped[i];
+    }
+  }
   return output;
-};
-
-function isValidChecksumAddress(address: string, chainId?: string) {
-  return isValidAddress(address) && toChecksumAddress(address, chainId) === address;
 }
-
-function isValidAddress(address: string) {
-  return /^0x[0-9a-fA-F]{40}$/.test(address);
-}
-export const stripHexPrefix = (str: string) => {
-  return str.slice(0, 2) === "0x" ? str.slice(2) : str;
-};
