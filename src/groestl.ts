@@ -297,7 +297,7 @@ var final = function (state: any) {
   }
 };
 
-function grsCheckSumFn(str: Buffer): Uint8Array {
+function grsCheckSumFn(str: Uint8Array): Uint8Array {
   var a = groestll(str);
   a = groestll(int32Buffer2Bytes(a));
   a = a.slice(0, 8);
@@ -305,8 +305,8 @@ function grsCheckSumFn(str: Buffer): Uint8Array {
 }
 
 function bs58grscheckDecode(str: string): Buffer {
-  const buffer = base58.decode(str);
-  const payload = decodeRaw(Buffer.from(buffer));
+  const bytes = base58.decode(str);
+  const payload = decodeRaw(bytes);
   if (payload.length === 0) {
     throw new Error("Invalid checksum");
   }
@@ -316,20 +316,22 @@ function bs58grscheckDecode(str: string): Buffer {
 function makeBase58GrsCheckDecoder(
   p2pkhVersions: B58CheckVersion[],
   p2shVersions: B58CheckVersion[],
-): (data: string) => Buffer {
+): (data: string) => Uint8Array {
+  const P2PKH_PREFIX = hexToBytes("76a914");
+  const P2PKH_SUFFIX = hexToBytes("88ac");
+
+  const P2SH_PREFIX = hexToBytes("a914");
+  const P2SH_SUFFIX = hexToBytes("87");
+
   return (data: string) => {
     const addr = bs58grscheckDecode(data);
     const checkVersion = (version: B58CheckVersion) => {
-      return version.every((value: number, index: number) => index < addr.length && value === addr.readUInt8(index));
+      return version.every((value: number, index: number) => index < addr.length && value === addr[index]);
     };
     if (p2pkhVersions.some(checkVersion)) {
-      return Buffer.concat([
-        Buffer.from([0x76, 0xa9, 0x14]),
-        addr.slice(p2pkhVersions[0].length),
-        Buffer.from([0x88, 0xac]),
-      ]);
+      return concatBytes(P2PKH_PREFIX, addr.subarray(p2pkhVersions[0].length), P2PKH_SUFFIX);
     } else if (p2shVersions.some(checkVersion)) {
-      return Buffer.concat([Buffer.from([0xa9, 0x14]), addr.slice(p2shVersions[0].length), Buffer.from([0x87])]);
+      return concatBytes(P2SH_PREFIX, addr.subarray(p2shVersions[0].length), P2SH_SUFFIX);
     }
     throw Error("Unrecognised address format");
   };
@@ -390,15 +392,15 @@ function makeBase58GrsCheckEncoder(p2pkhVersion: B58CheckVersion, p2shVersion: B
 }
 
 function bs58grscheckEncode(payload: Uint8Array): string {
-  const checksum = grsCheckSumFn(Buffer.from(payload));
-  const concatBuffer = concatBytes(new Uint8Array(payload), new Uint8Array(checksum).subarray(0, 4));
+  const checksum = grsCheckSumFn(payload);
+  const concatBuffer = concatBytes(payload, checksum.subarray(0, 4));
   return base58.encode(concatBuffer);
 }
 // Lifted from https://github.com/ensdomains/address-encoder/pull/239/commits/4872330fba558730108d7f1e0d197cfef3dd9ca6
 // https://github.com/groestlcoin/bs58grscheck
-function decodeRaw(buffer: Buffer): Buffer {
-  const payload = buffer.slice(0, -4);
-  const checksum = buffer.slice(-4);
+function decodeRaw(bytes: Uint8Array): Uint8Array {
+  const payload = bytes.subarray(0, -4);
+  const checksum = bytes.subarray(-4);
   const newChecksum = grsCheckSumFn(payload);
   /* tslint:disable:no-bitwise */
   if (
@@ -407,7 +409,7 @@ function decodeRaw(buffer: Buffer): Buffer {
     (checksum[2] ^ newChecksum[2]) |
     (checksum[3] ^ newChecksum[3])
   ) {
-    return Buffer.from([]);
+    return new Uint8Array();
   }
   /* tslint:enable:no-bitwise */
   return payload;
@@ -440,40 +442,16 @@ function bigintToU64(i: bigint): u64 {
   const lo = Number(bytesToNumberBE(hexToBytes(low)));
   return new u64(hi, lo);
 }
-
 export function bytesToNumberBE(bytes: Uint8Array): bigint {
   return hexToNumber(bytesToHex(bytes));
 }
-
-export function numberToBytesLE(n: number | bigint, len: number): Uint8Array {
-  return numberToBytesBE(n, len).reverse();
-}
 export function numberToBytesBE(n: number | bigint, len: number): Uint8Array {
   return hexToBytes(n.toString(16).padStart(len * 2, "0"));
-}
-const u8a = (a: any): a is Uint8Array => a instanceof Uint8Array;
-
-export function bytesToNumberLE(bytes: Uint8Array): bigint {
-  if (!u8a(bytes)) throw new Error("Uint8Array expected");
-  return hexToNumber(bytesToHex(Uint8Array.from(bytes).reverse()));
 }
 export function hexToNumber(hex: string): bigint {
   if (typeof hex !== "string") throw new Error("hex string expected, got " + typeof hex);
   // Big Endian
   return BigInt(hex === "" ? "0" : `0x${hex}`);
-}
-
-// @ts-expect-error
-function fromNumber(value) {
-  if (isNaN(value) || !isFinite(value)) {
-    return bigintToU64(0n);
-  }
-  /* tslint:disable:no-bitwise */
-  let pow32 = 1 << 32;
-
-  // @ts-expect-error
-  return new u64(value % pow32 | 0, (value / pow32) | 0);
-  /* tslint:enable:no-bitwise */
 }
 
 // Creates a deep copy of this Word..
@@ -496,13 +474,13 @@ u64.prototype.setxor64 = function (...args: bigint[]) {
   return this;
 };
 
-export function xor64(...args: bigint[]): bigint {
-  return args.slice(1).reduceRight((acc, current) => {
+export function xor64(...ns: bigint[]): bigint {
+  return ns.slice(1).reduceRight((acc, current) => {
     return acc ^ current;
-  }, args[0]);
+  }, ns[0]);
 }
 
-export function bufferInsert(buffer: Uint8Array, bufferOffset: any, data: any, len: any, dataOffset: number = 0) {
+export function bufferInsert(buffer: Uint8Array, bufferOffset: number, data: any, len: any, dataOffset: number = 0) {
   /* tslint:disable:no-bitwise */
   dataOffset = dataOffset | 0;
   /* tslint:enable:no-bitwise */
