@@ -19,8 +19,10 @@ export function versionedBitcoin(
   p2pkhVersions: Array<B58CheckVersion>,
   p2shVersions: Array<B58CheckVersion>,
 ): Coder<Uint8Array, Uint8Array> {
-  const p2pkhVersionsOk = p2pkhVersions.every((bytes) => bytes.length === p2pkhVersions.length);
-  const p2shVersionsOk = p2shVersions.every((bytes) => bytes.length === p2pkhVersions.length);
+  const p2pkhLen = p2pkhVersions[0].length;
+  const p2pkhVersionsOk = p2pkhVersions.every((bytes) => bytes.length === p2pkhLen);
+  const p2shLen = p2pkhVersions[0].length;
+  const p2shVersionsOk = p2shVersions.every((bytes) => bytes.length === p2shLen);
   if (!p2pkhVersionsOk || !p2shVersionsOk) {
     throw new Error(`Expect versions to have same length`);
   }
