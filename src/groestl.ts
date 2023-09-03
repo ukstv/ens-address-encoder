@@ -166,8 +166,7 @@ function compress(int64buf: Array<bigint>, state: any) {
   let t = new Array(16);
   for (let r = 0; r < 14; r++) {
     for (var i = 0; i < 16; i++) {
-      let b = J64[i] + R64[r];
-      g[i] = xor64(g[i], b << 56n);
+      g[i] ^= (J64[i] + R64[r]) << 56n;
     }
 
     for (let uu = 0; uu < 16; uu++) {
