@@ -1,18 +1,25 @@
-import { B58CheckVersion, makeBech32Segwit, versionedBitcoin } from "./bitcoin.js";
+import { makeBech32Segwit, versionedBitcoin, type B58CheckVersion } from "./bitcoin.js";
 import { base58, base64, Coder, utils } from "@scure/base";
+import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
 
-// const bs58DecodeNoCheck = bs.bs58DecodeNoCheck
-// import { decode as bs58DecodeNoCheck, encode as bs58EncodeNoCheck } from "bs58";
-import type { IFormat } from "./format.js";
-import { bytesToHex, concatBytes, hexToBytes, toBytes } from "@noble/hashes/utils";
+// -- Utils first
 
-type Context = {
-  buffer: Uint8Array;
-  state: Array<bigint>;
-  ptr: number;
-  count: number;
-};
-
+function bytesToNumberBE(bytes: Uint8Array): bigint {
+  return hexToNumber(bytesToHex(bytes));
+}
+function numberToBytesBE(n: number | bigint, len: number): Uint8Array {
+  return hexToBytes(n.toString(16).padStart(len * 2, "0"));
+}
+function hexToNumber(hex: string): bigint {
+  // Big Endian
+  return BigInt(hex === "" ? "0" : `0x${hex}`);
+}
+/**
+ * Return n'th byte of x u64 number.
+ */
+function B64(n: number, x: bigint): number {
+  return numberToBytesBE(x, 8)[n];
+}
 const bigintArrayBytes: Coder<Array<bigint>, Uint8Array> = {
   encode(from: Array<bigint>): Uint8Array {
     return concatBytes(...from.map((b) => numberToBytesBE(b, 8)));
@@ -28,55 +35,10 @@ const bigintArrayBytes: Coder<Array<bigint>, Uint8Array> = {
     return res;
   },
 };
-
-function makeGroestlcoinDecoder(
-  hrp: string,
-  p2pkhVersions: B58CheckVersion[],
-  p2shVersions: B58CheckVersion[],
-): IFormat["decode"] {
-  const decodeBech32 = makeBech32Segwit(hrp);
-  const decodeBase58Check = makeBase58GroestlCheck(p2pkhVersions, p2shVersions);
-  return (data: string) => {
-    if (data.toLowerCase().startsWith(hrp + "1")) {
-      return decodeBech32.decode(data);
-    } else {
-      return decodeBase58Check.decode(data);
-    }
-  };
-}
-
-function groestlInternal(ctx: Context, data: Uint8Array): Context {
-  let len = data.length;
-  let buf = ctx.buffer;
-  let ptr = ctx.ptr;
-  const V = Array.from<bigint>({ length: 16 }).map((_, index) => ctx.state[index]);
-  if (len < ctx.buffer.length - ptr) {
-    buf.set(data, ptr);
-    ptr += data.length;
-    ctx.ptr = ptr;
-    return ctx;
-  }
-  while (len > 0) {
-    let clen = ctx.buffer.length - ptr;
-    if (clen > len) {
-      clen = len;
-    }
-    buf.set(data.subarray(0, clen), ptr);
-    ptr += clen;
-    data = data.subarray(0, clen);
-    len -= clen;
-    if (ptr === ctx.buffer.length) {
-      compress(buf, V);
-      ctx.count += 1;
-      ptr = 0;
-    }
-  }
-  ctx.state = V;
-  ctx.ptr = ptr;
-  return ctx;
-}
-
 const bigintArrayFromBase64 = utils.chain(bigintArrayBytes, base64);
+
+// -- Groestl Constants
+
 const T0 = bigintArrayFromBase64.decode(
   "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",
 );
@@ -101,13 +63,6 @@ const T6 = bigintArrayFromBase64.decode(
 const T7 = bigintArrayFromBase64.decode(
   "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",
 );
-
-/**
- * Return n'th byte of x u64 number.
- */
-function B64(n: number, x: bigint): number {
-  return numberToBytesBE(x, 8)[n];
-}
 
 const J64 = [
   0x00n,
@@ -148,6 +103,57 @@ const NJ64 = [
 ];
 
 const R64 = [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 10n, 11n, 12n, 13n];
+
+// -- Groestl hash function
+
+type Context = {
+  buffer: Uint8Array;
+  state: Array<bigint>;
+  ptr: number;
+  count: number;
+};
+
+function emptyContext(): Context {
+  const state = new Array(16).fill(0n);
+  state[15] = 512n;
+  return {
+    state: state,
+    ptr: 0,
+    count: 0,
+    buffer: new Uint8Array(128),
+  };
+}
+
+function groestlInternal(ctx: Context, data: Uint8Array): Context {
+  let len = data.length;
+  let buf = ctx.buffer;
+  let ptr = ctx.ptr;
+  const V = Array.from<bigint>({ length: 16 }).map((_, index) => ctx.state[index]);
+  if (len < ctx.buffer.length - ptr) {
+    buf.set(data, ptr);
+    ptr += data.length;
+    ctx.ptr = ptr;
+    return ctx;
+  }
+  while (len > 0) {
+    let clen = ctx.buffer.length - ptr;
+    if (clen > len) {
+      clen = len;
+    }
+    buf.set(data.subarray(0, clen), ptr);
+    ptr += clen;
+    data = data.subarray(0, clen);
+    len -= clen;
+    if (ptr === ctx.buffer.length) {
+      compress(buf, V);
+      ctx.count += 1;
+      ptr = 0;
+    }
+  }
+  ctx.state = V;
+  ctx.ptr = ptr;
+  return ctx;
+}
 
 function compress(bytes: Uint8Array, state: Array<bigint>) {
   const int64buf = bigintArrayBytes.decode(bytes);
@@ -198,21 +204,6 @@ function compress(bytes: Uint8Array, state: Array<bigint>) {
   }
 }
 
-function emptyContext(): Context {
-  const state = new Array(16).fill(0n);
-  state[15] = 512n;
-  return {
-    state: state,
-    ptr: 0,
-    count: 0,
-    buffer: new Uint8Array(128),
-  };
-}
-
-function groestl(input: Uint8Array): Uint8Array {
-  return groestlClose(groestlInternal(emptyContext(), input));
-}
-
 function groestlClose(ctx: Context): Uint8Array {
   const ptr = ctx.ptr;
   const pad = new Uint8Array(136);
@@ -258,17 +249,20 @@ function final(state: Context["state"]) {
   }
 }
 
-const groestlChecksum = utils.checksum(4, (payload) => groestl(groestl(payload)).subarray(0, 4));
-function makeBase58GroestlCheck(p2pkhVersions: B58CheckVersion[], p2shVersions: B58CheckVersion[]) {
-  return utils.chain(versionedBitcoin(p2pkhVersions, p2shVersions), groestlChecksum, base58);
+function groestl(input: Uint8Array): Uint8Array {
+  return groestlClose(groestlInternal(emptyContext(), input));
 }
-function makeGroestlCoder(
+
+// -- Groestl coder
+
+const groestlChecksum = utils.checksum(4, (payload) => groestl(groestl(payload)).subarray(0, 4));
+export function makeGroestlCoder(
   hrp: string,
   p2pkhVersions: B58CheckVersion[],
   p2shVersions: B58CheckVersion[],
 ): Coder<Uint8Array, string> {
   const bech32Segwit = makeBech32Segwit(hrp);
-  const base58GroestlCheck = makeBase58GroestlCheck(p2pkhVersions, p2shVersions);
+  const base58GroestlCheck = utils.chain(versionedBitcoin(p2pkhVersions, p2shVersions), groestlChecksum, base58);
   return {
     encode(from: Uint8Array): string {
       try {
@@ -285,31 +279,4 @@ function makeGroestlCoder(
       }
     },
   };
-}
-
-export const groestlcoinChain = (
-  name: string,
-  coinType: number,
-  hrp: string,
-  p2pkhVersions: B58CheckVersion[],
-  p2shVersions: B58CheckVersion[],
-): IFormat => {
-  const coder = makeGroestlCoder(hrp, p2pkhVersions, p2shVersions);
-  return {
-    coinType,
-    decode: coder.decode,
-    encode: coder.encode,
-    name,
-  };
-};
-
-export function bytesToNumberBE(bytes: Uint8Array): bigint {
-  return hexToNumber(bytesToHex(bytes));
-}
-export function numberToBytesBE(n: number | bigint, len: number): Uint8Array {
-  return hexToBytes(n.toString(16).padStart(len * 2, "0"));
-}
-export function hexToNumber(hex: string): bigint {
-  // Big Endian
-  return BigInt(hex === "" ? "0" : `0x${hex}`);
 }
