@@ -53,8 +53,7 @@ function groestl(ctx: Context, data: Uint8Array, len: number) {
     data = data.slice(clen);
     len -= clen;
     if (ptr === ctx.buffer.length) {
-      const b = bytesToBigIntArray(buf);
-      compress(b, V);
+      compress(buf, V);
       ctx.count += 1;
       ptr = 0;
     }
@@ -151,7 +150,8 @@ const NJ64 = [
 
 const R64 = [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 10n, 11n, 12n, 13n];
 
-function compress(int64buf: Array<bigint>, state: Array<u64>) {
+function compress(bytes: Uint8Array, state: Array<u64>) {
+  const int64buf = bytesToBigIntArray(bytes);
   let g = new Array<bigint>(16);
   let m = new Array<bigint>(16);
   for (let uu = 0; uu < 16; uu++) {
@@ -166,16 +166,15 @@ function compress(int64buf: Array<bigint>, state: Array<u64>) {
 
     for (let uu = 0; uu < 16; uu++) {
       /* tslint:disable:no-bitwise */
-      t[uu] = xor64(
-        T0[B64(0, g[uu])],
-        T1[B64(1, g[(uu + 1) & 0xf])],
-        T2[B64(2, g[(uu + 2) & 0xf])],
-        T3[B64(3, g[(uu + 3) & 0xf])],
-        T4[B64(4, g[(uu + 4) & 0xf])],
-        T5[B64(5, g[(uu + 5) & 0xf])],
-        T6[B64(6, g[(uu + 6) & 0xf])],
-        T7[B64(7, g[(uu + 11) & 0xf])],
-      );
+      t[uu] =
+        T0[B64(0, g[uu])] ^
+        T1[B64(1, g[(uu + 1) & 0xf])] ^
+        T2[B64(2, g[(uu + 2) & 0xf])] ^
+        T3[B64(3, g[(uu + 3) & 0xf])] ^
+        T4[B64(4, g[(uu + 4) & 0xf])] ^
+        T5[B64(5, g[(uu + 5) & 0xf])] ^
+        T6[B64(6, g[(uu + 6) & 0xf])] ^
+        T7[B64(7, g[(uu + 11) & 0xf])];
     }
     let temp = g;
     g = t;
@@ -183,19 +182,18 @@ function compress(int64buf: Array<bigint>, state: Array<u64>) {
   }
   for (let r = 0; r < 14; r++) {
     for (let ii = 0; ii < 16; ii++) {
-      m[ii] = xor64(m[ii], R64[r], NJ64[ii]);
+      m[ii] = m[ii] ^ R64[r] ^ NJ64[ii];
     }
     for (let uu = 0; uu < 16; uu++) {
-      t[uu] = xor64(
-        T0[B64(0, m[(uu + 1) & 0xf])],
-        T1[B64(1, m[(uu + 3) & 0xf])],
-        T2[B64(2, m[(uu + 5) & 0xf])],
-        T3[B64(3, m[(uu + 11) & 0xf])],
-        T4[B64(4, m[(uu + 0) & 0xf])],
-        T5[B64(5, m[(uu + 2) & 0xf])],
-        T6[B64(6, m[(uu + 4) & 0xf])],
-        T7[B64(7, m[(uu + 6) & 0xf])],
-      );
+      t[uu] =
+        T0[B64(0, m[(uu + 1) & 0xf])] ^
+        T1[B64(1, m[(uu + 3) & 0xf])] ^
+        T2[B64(2, m[(uu + 5) & 0xf])] ^
+        T3[B64(3, m[(uu + 11) & 0xf])] ^
+        T4[B64(4, m[(uu + 0) & 0xf])] ^
+        T5[B64(5, m[(uu + 2) & 0xf])] ^
+        T6[B64(6, m[(uu + 4) & 0xf])] ^
+        T7[B64(7, m[(uu + 6) & 0xf])];
     }
     /* tslint:enable:no-bitwise */
     let temp = m;
@@ -203,7 +201,7 @@ function compress(int64buf: Array<bigint>, state: Array<u64>) {
     t = temp;
   }
   for (let uu = 0; uu < 16; uu++) {
-    state[uu] = bigintToU64(xor64(state[uu].bigint, g[uu], m[uu]));
+    state[uu] = bigintToU64(state[uu].bigint ^ g[uu] ^ m[uu]);
   }
 }
 
@@ -263,16 +261,15 @@ function final(state: Context["state"]) {
       g[i] ^= (J64[i] + R64[r]) << 56n;
     }
     for (let uu = 0; uu < 16; uu++) {
-      t[uu] = xor64(
-        T0[B64(0, g[uu])],
-        T1[B64(1, g[(uu + 1) & 0xf])],
-        T2[B64(2, g[(uu + 2) & 0xf])],
-        T3[B64(3, g[(uu + 3) & 0xf])],
-        T4[B64(4, g[(uu + 4) & 0xf])],
-        T5[B64(5, g[(uu + 5) & 0xf])],
-        T6[B64(6, g[(uu + 6) & 0xf])],
-        T7[B64(7, g[(uu + 11) & 0xf])],
-      );
+      t[uu] =
+        T0[B64(0, g[uu])] ^
+        T1[B64(1, g[(uu + 1) & 0xf])] ^
+        T2[B64(2, g[(uu + 2) & 0xf])] ^
+        T3[B64(3, g[(uu + 3) & 0xf])] ^
+        T4[B64(4, g[(uu + 4) & 0xf])] ^
+        T5[B64(5, g[(uu + 5) & 0xf])] ^
+        T6[B64(6, g[(uu + 6) & 0xf])] ^
+        T7[B64(7, g[(uu + 11) & 0xf])];
     }
     const temp = g;
     g = t;
@@ -436,10 +433,4 @@ export function hexToNumber(hex: string): bigint {
   if (typeof hex !== "string") throw new Error("hex string expected, got " + typeof hex);
   // Big Endian
   return BigInt(hex === "" ? "0" : `0x${hex}`);
-}
-
-export function xor64(...ns: bigint[]): bigint {
-  return ns.slice(1).reduceRight((acc, current) => {
-    return acc ^ current;
-  }, ns[0]);
 }
