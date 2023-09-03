@@ -109,11 +109,10 @@ const T7 = bytes2Int64Buffer(
   ),
 );
 
-function B64(n: number, x: u64): number {
-  return numberToBytesBE(x.bigint, 8)[n];
-}
-
-function B64A(n: number, x: bigint): number {
+/**
+ * Return n'th byte of x u64 number.
+ */
+function B64(n: number, x: bigint): number {
   return numberToBytesBE(x, 8)[n];
 }
 
@@ -175,14 +174,14 @@ function compress(int64buf: Array<bigint>, state: any) {
       /* tslint:disable:no-bitwise */
       t[uu] = bigintToU64(
         xor64(
-          T0[B64A(0, g[uu])],
-          T1[B64A(1, g[(uu + 1) & 0xf])],
-          T2[B64A(2, g[(uu + 2) & 0xf])],
-          T3[B64A(3, g[(uu + 3) & 0xf])],
-          T4[B64A(4, g[(uu + 4) & 0xf])],
-          T5[B64A(5, g[(uu + 5) & 0xf])],
-          T6[B64A(6, g[(uu + 6) & 0xf])],
-          T7[B64A(7, g[(uu + 11) & 0xf])],
+          T0[B64(0, g[uu])],
+          T1[B64(1, g[(uu + 1) & 0xf])],
+          T2[B64(2, g[(uu + 2) & 0xf])],
+          T3[B64(3, g[(uu + 3) & 0xf])],
+          T4[B64(4, g[(uu + 4) & 0xf])],
+          T5[B64(5, g[(uu + 5) & 0xf])],
+          T6[B64(6, g[(uu + 6) & 0xf])],
+          T7[B64(7, g[(uu + 11) & 0xf])],
         ),
       );
     }
@@ -197,14 +196,14 @@ function compress(int64buf: Array<bigint>, state: any) {
     for (let uu = 0; uu < 16; uu++) {
       t[uu] = bigintToU64(
         xor64(
-          T0[B64A(0, m[(uu + 1) & 0xf])],
-          T1[B64A(1, m[(uu + 3) & 0xf])],
-          T2[B64A(2, m[(uu + 5) & 0xf])],
-          T3[B64A(3, m[(uu + 11) & 0xf])],
-          T4[B64A(4, m[(uu + 0) & 0xf])],
-          T5[B64A(5, m[(uu + 2) & 0xf])],
-          T6[B64A(6, m[(uu + 4) & 0xf])],
-          T7[B64A(7, m[(uu + 6) & 0xf])],
+          T0[B64(0, m[(uu + 1) & 0xf])],
+          T1[B64(1, m[(uu + 3) & 0xf])],
+          T2[B64(2, m[(uu + 5) & 0xf])],
+          T3[B64(3, m[(uu + 11) & 0xf])],
+          T4[B64(4, m[(uu + 0) & 0xf])],
+          T5[B64(5, m[(uu + 2) & 0xf])],
+          T6[B64(6, m[(uu + 4) & 0xf])],
+          T7[B64(7, m[(uu + 6) & 0xf])],
         ),
       );
     }
@@ -276,14 +275,14 @@ function final(state: Array<u64>) {
     }
     for (let uu = 0; uu < 16; uu++) {
       t[uu] = xor64(
-        T0[B64A(0, g[uu])],
-        T1[B64A(1, g[(uu + 1) & 0xf])],
-        T2[B64A(2, g[(uu + 2) & 0xf])],
-        T3[B64A(3, g[(uu + 3) & 0xf])],
-        T4[B64A(4, g[(uu + 4) & 0xf])],
-        T5[B64A(5, g[(uu + 5) & 0xf])],
-        T6[B64A(6, g[(uu + 6) & 0xf])],
-        T7[B64A(7, g[(uu + 11) & 0xf])],
+        T0[B64(0, g[uu])],
+        T1[B64(1, g[(uu + 1) & 0xf])],
+        T2[B64(2, g[(uu + 2) & 0xf])],
+        T3[B64(3, g[(uu + 3) & 0xf])],
+        T4[B64(4, g[(uu + 4) & 0xf])],
+        T5[B64(5, g[(uu + 5) & 0xf])],
+        T6[B64(6, g[(uu + 6) & 0xf])],
+        T7[B64(7, g[(uu + 11) & 0xf])],
       );
     }
     const temp = g;
