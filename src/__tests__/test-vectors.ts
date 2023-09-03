@@ -190,13 +190,13 @@ export const TEST_VECTORS: Array<TestVector> = [
     coinType: 111,
     passingVectors: [{ text: "AKkCgA5To85YSAgJgxUw8dKJsHkCzsu2dy", hex: "172b8f8e3490db00c6cc0dda2d2b9626e681500e29" }],
   },
-  // {
-  //   name: "ATOM",
-  //   coinType: 118,
-  //   passingVectors: [
-  //     { text: "cosmos1depk54cuajgkzea6zpgkq36tnjwdzv4afc3d27", hex: "6e436a571cec916167ba105160474b9c9cd132bd" },
-  //   ],
-  // },
+  {
+    name: "ATOM",
+    coinType: 118,
+    passingVectors: [
+      { text: "cosmos1depk54cuajgkzea6zpgkq36tnjwdzv4afc3d27", hex: "6e436a571cec916167ba105160474b9c9cd132bd" },
+    ],
+  },
   // {
   //   name: "ZIL",
   //   coinType: 119,

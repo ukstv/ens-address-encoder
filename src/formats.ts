@@ -7,6 +7,7 @@ import { base32, base58 } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
 import { icxCoder } from "./chains/icx.js";
 import { arkCoder } from "./chains/ark.js";
+import { bech32, bech32m } from "bech32";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -16,6 +17,29 @@ const getConfig = (name: string, coinType: number, encode: IFormat["encode"], de
     name,
   };
 };
+
+const { decode: bech32Decode, encode: bech32Encode, fromWords: bech32FromWords, toWords: bech32ToWords } = bech32;
+
+function makeBech32Decoder(currentPrefix: string, limit?: number) {
+  return (data: string) => {
+    const { prefix, words } = bech32Decode(data, limit);
+    if (prefix !== currentPrefix) {
+      throw Error("Unrecognised address format");
+    }
+    return Buffer.from(bech32FromWords(words));
+  };
+}
+
+const bech32Chain = (name: string, coinType: number, prefix: string, limit?: number): IFormat => ({
+  coinType,
+  decode: makeBech32Decoder(prefix, limit),
+  encode: makeBech32Encoder(prefix, limit),
+  name,
+});
+
+function makeBech32Encoder(prefix: string, limit?: number) {
+  return (data: Uint8Array) => bech32Encode(prefix, bech32ToWords(data), limit);
+}
 
 const h = (...hexes: Array<string>) => hexes.map(hexToBytes);
 const c = fromCoder;
@@ -41,7 +65,7 @@ export const FORMATS: Array<IFormat> = [
   c("XVG", 77, makeBitcoinBase58Check(h("1E"), h("21"))),
   c("STRAT", 105, makeBitcoinBase58Check(h("3F"), h("7D"))),
   c("ARK", 111, arkCoder),
-  //   bech32Chain('ATOM', 118, 'cosmos'),
+  bech32Chain("ATOM", 118, "cosmos"),
   //   bech32Chain('ZIL', 119, 'zil'),
   //   bech32Chain('EGLD', 120, 'erd'),
   //   getConfig('ZEN', 121, zenEncoder, zenDecoder),
