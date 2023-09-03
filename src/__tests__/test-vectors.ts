@@ -170,13 +170,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "cxa4524257b3511fb9574009785c1f1e73cf4097e7", hex: "01a4524257b3511fb9574009785c1f1e73cf4097e7" },
     ],
   },
-  // {
-  //   name: "XVG",
-  //   coinType: 77,
-  //   passingVectors: [
-  //     { text: "D7MKQnLxXEqn84PN42jWAVhvrXEuULLV9r", hex: "76a914183ffcc41f3095bea7ff324e52a65b46c74126e188ac" },
-  //   ],
-  // },
+  {
+    name: "XVG",
+    coinType: 77,
+    passingVectors: [
+      { text: "D7MKQnLxXEqn84PN42jWAVhvrXEuULLV9r", hex: "76a914183ffcc41f3095bea7ff324e52a65b46c74126e188ac" },
+    ],
+  },
   // {
   //   name: "STRAT",
   //   coinType: 105,
