@@ -29,11 +29,8 @@ function makeGroestlcoinDecoder(
   };
 }
 
-function integerToBytes(i: number): Uint8Array {
-  return Uint8Array.of((i & 0xff000000) >> 24, (i & 0x00ff0000) >> 16, (i & 0x0000ff00) >> 8, (i & 0x000000ff) >> 0);
-}
-
-function groestl(ctx: Context, data: Uint8Array, len: number) {
+function groestl(ctx: Context, data: Uint8Array) {
+  let len = data.length;
   let buf = ctx.buffer;
   let ptr = ctx.ptr;
   const V = Array.from<bigint>({ length: 16 }).map((_, index) => ctx.state[index]);
@@ -213,13 +210,13 @@ function bytesToBigIntArray(b: Uint8Array): bigint[] {
 function groestll(input: Uint8Array): Uint8Array {
   const state = new Array(16).fill(0n);
   state[15] = 512n;
-  const ctx: Context = {
+  const ctx = {
     state: state,
     ptr: 0,
     count: 0,
     buffer: new Uint8Array(128),
   };
-  groestl(ctx, input, input.length);
+  groestl(ctx, input);
   return groestlClose(ctx);
 }
 
@@ -238,7 +235,7 @@ function groestlClose(ctx: Context): Uint8Array {
   }
   pad.set(new Array(padLen - 9).fill(0), 1);
   pad.set(numberToBytesBE(count, 8), padLen - 8);
-  groestl(ctx, pad, padLen);
+  groestl(ctx, pad.subarray(0, padLen));
   final(ctx.state);
   const out2 = new Uint8Array(64);
   for (let i = 0; i < 8; i++) {
@@ -273,8 +270,7 @@ function final(state: Context["state"]) {
 }
 
 function grsCheckSumFn(str: Uint8Array): Uint8Array {
-  const doubleDigest = groestll(groestll(str));
-  return doubleDigest.subarray(0, 8);
+  return groestll(groestll(str)).subarray(0, 8);
 }
 
 function bs58grscheckDecode(str: string): Uint8Array {
