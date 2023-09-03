@@ -12,6 +12,7 @@ import { zenCoder } from "./chains/zen.js";
 import { makeZcashCoder } from "./chains/zcash.js";
 import { liskCoder } from "./chains/lisk.js";
 import { makeEosCoder } from "./chains/eos.js";
+import { xrpCodec } from "./chains/xrp.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -57,6 +58,7 @@ export const FORMATS: Array<IFormat> = [
   c("FIRO", 136, makeBitcoinBase58Check(h("52"), h("07"))),
   c("RSK", 137, makeChecksummedHexCoder(30)),
   c("KMD", 141, makeBitcoinBase58Check(h("3C"), h("55"))),
+  c("XRP", 144, xrpCodec),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
