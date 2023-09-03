@@ -268,8 +268,7 @@ function groestlClose(ctx: any, a?: any, b?: any): Uint8Array {
 }
 
 function final(state: Array<u64>) {
-  var g = new Array<u64>(16);
-  bufferInsert64(g, 0, state, 16);
+  var g = Array.from<u64>({ length: 16 }).map((_, i) => state[i].clone());
   var t = new Array<bigint>(16);
   for (let r = 0; r < 14; r++) {
     for (let i = 0; i < 16; i++) {
@@ -277,23 +276,21 @@ function final(state: Array<u64>) {
       g[i] = bigintToU64(xor64(g[i].bigint, b << 56n));
     }
     for (let uu = 0; uu < 16; uu++) {
-      t[uu] = (
-        xor64(
-          T0[B64(0, g[uu])],
-          T1[B64(1, g[(uu + 1) & 0xf])],
-          T2[B64(2, g[(uu + 2) & 0xf])],
-          T3[B64(3, g[(uu + 3) & 0xf])],
-          T4[B64(4, g[(uu + 4) & 0xf])],
-          T5[B64(5, g[(uu + 5) & 0xf])],
-          T6[B64(6, g[(uu + 6) & 0xf])],
-          T7[B64(7, g[(uu + 11) & 0xf])],
-        )
+      t[uu] = xor64(
+        T0[B64(0, g[uu])],
+        T1[B64(1, g[(uu + 1) & 0xf])],
+        T2[B64(2, g[(uu + 2) & 0xf])],
+        T3[B64(3, g[(uu + 3) & 0xf])],
+        T4[B64(4, g[(uu + 4) & 0xf])],
+        T5[B64(5, g[(uu + 5) & 0xf])],
+        T6[B64(6, g[(uu + 6) & 0xf])],
+        T7[B64(7, g[(uu + 11) & 0xf])],
       );
     }
     /* tslint:enable:no-bitwise */
     var temp = g;
-    g = t.map(r => bigintToU64(r))
-    t = temp.map(u => u.bigint);
+    g = t.map((r) => bigintToU64(r));
+    t = temp.map((u) => u.bigint);
   }
   for (let uu = 0; uu < 16; uu++) {
     state[uu] = bigintToU64(state[uu].bigint ^ g[uu].bigint);
@@ -475,14 +472,6 @@ export function bufferInsert(buffer: Uint8Array, bufferOffset: number, data: any
   let i = 0;
   while (i < len) {
     buffer[i + bufferOffset] = data[i + dataOffset];
-    i++;
-  }
-}
-
-export function bufferInsert64(buffer: Array<u64>, bufferOffset: number, data: Array<u64>, len: number) {
-  let i = 0;
-  while (i < len) {
-    buffer[i + bufferOffset] = data[i].clone();
     i++;
   }
 }
