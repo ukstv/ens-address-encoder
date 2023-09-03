@@ -163,7 +163,7 @@ function compress(int64buf: Array<bigint>, state: Array<u64>) {
     m[uu] = int64buf[uu];
     g[uu] = m[uu] ^ state[uu].bigint;
   }
-  let t = new Array(16);
+  let t = new Array<bigint>(16);
   for (let r = 0; r < 14; r++) {
     for (var i = 0; i < 16; i++) {
       g[i] ^= (J64[i] + R64[r]) << 56n;
@@ -171,44 +171,40 @@ function compress(int64buf: Array<bigint>, state: Array<u64>) {
 
     for (let uu = 0; uu < 16; uu++) {
       /* tslint:disable:no-bitwise */
-      t[uu] = bigintToU64(
-        xor64(
-          T0[B64(0, g[uu])],
-          T1[B64(1, g[(uu + 1) & 0xf])],
-          T2[B64(2, g[(uu + 2) & 0xf])],
-          T3[B64(3, g[(uu + 3) & 0xf])],
-          T4[B64(4, g[(uu + 4) & 0xf])],
-          T5[B64(5, g[(uu + 5) & 0xf])],
-          T6[B64(6, g[(uu + 6) & 0xf])],
-          T7[B64(7, g[(uu + 11) & 0xf])],
-        ),
+      t[uu] = xor64(
+        T0[B64(0, g[uu])],
+        T1[B64(1, g[(uu + 1) & 0xf])],
+        T2[B64(2, g[(uu + 2) & 0xf])],
+        T3[B64(3, g[(uu + 3) & 0xf])],
+        T4[B64(4, g[(uu + 4) & 0xf])],
+        T5[B64(5, g[(uu + 5) & 0xf])],
+        T6[B64(6, g[(uu + 6) & 0xf])],
+        T7[B64(7, g[(uu + 11) & 0xf])],
       );
     }
     let temp = g.map((r) => bigintToU64(r));
-    g = t.map((u) => u.bigint);
-    t = temp;
+    g = t;
+    t = temp.map((r) => r.bigint);
   }
   for (let r = 0; r < 14; r++) {
     for (let ii = 0; ii < 16; ii++) {
       m[ii] = xor64(m[ii], R64[r], NJ64[ii]);
     }
     for (let uu = 0; uu < 16; uu++) {
-      t[uu] = bigintToU64(
-        xor64(
-          T0[B64(0, m[(uu + 1) & 0xf])],
-          T1[B64(1, m[(uu + 3) & 0xf])],
-          T2[B64(2, m[(uu + 5) & 0xf])],
-          T3[B64(3, m[(uu + 11) & 0xf])],
-          T4[B64(4, m[(uu + 0) & 0xf])],
-          T5[B64(5, m[(uu + 2) & 0xf])],
-          T6[B64(6, m[(uu + 4) & 0xf])],
-          T7[B64(7, m[(uu + 6) & 0xf])],
-        ),
+      t[uu] = xor64(
+        T0[B64(0, m[(uu + 1) & 0xf])],
+        T1[B64(1, m[(uu + 3) & 0xf])],
+        T2[B64(2, m[(uu + 5) & 0xf])],
+        T3[B64(3, m[(uu + 11) & 0xf])],
+        T4[B64(4, m[(uu + 0) & 0xf])],
+        T5[B64(5, m[(uu + 2) & 0xf])],
+        T6[B64(6, m[(uu + 4) & 0xf])],
+        T7[B64(7, m[(uu + 6) & 0xf])],
       );
     }
     /* tslint:enable:no-bitwise */
-    let temp = m.map((r) => bigintToU64(r));
-    m = t.map((u) => u.bigint);
+    let temp = m;
+    m = t;
     t = temp;
   }
   for (let uu = 0; uu < 16; uu++) {
