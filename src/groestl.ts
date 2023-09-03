@@ -248,11 +248,11 @@ function groestlClose(ctx: Context): Uint8Array {
   pad.set(numberToBytesBE(count, 8), padLen - 8);
   groestl(ctx, pad, padLen);
   final(ctx.state);
-  const out = new Uint8Array(64);
-  for (let uu = 0, v = 8; uu < 8; uu++, v++) {
-    out.set(numberToBytesBE(ctx.state[v].bigint, 8), 8 * uu);
+  const out2 = new Uint8Array(64);
+  for (let i = 0; i < 8; i++) {
+    out2.set(numberToBytesBE(ctx.state[i + 8].bigint, 8), i * 8);
   }
-  return out;
+  return out2;
 }
 
 function final(state: Context["state"]) {
@@ -405,10 +405,9 @@ type u64 = {
   hi: number;
   lo: number;
   bigint: bigint;
-  clone(): u64;
 };
 
-function u64(h: any, l: any) {
+function u64(h: number, l: number) {
   /* tslint:disable:no-bitwise */
   // @ts-expect-error
   this.hi = h >>> 0;
