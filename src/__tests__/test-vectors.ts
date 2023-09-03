@@ -1,4 +1,4 @@
-import { ethChainIdToCoinType } from "../eth.js";
+import { ethChainIdToCoinType } from "../chains/eth";
 
 type PassingVector = {
   text: string;

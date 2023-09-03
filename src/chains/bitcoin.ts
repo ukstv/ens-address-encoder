@@ -1,7 +1,7 @@
 import { concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { base58check, bech32, utils, type Coder } from "@scure/base";
 import { sha256 } from "@noble/hashes/sha256";
-import { fromCoder, UnrecognizedAddressFormatError, type IFormat } from "./format.js";
+import { fromCoder, UnrecognizedAddressFormatError, type IFormat } from "../format.js";
 
 export type B58CheckVersion = Uint8Array;
 
