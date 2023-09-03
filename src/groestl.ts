@@ -159,10 +159,10 @@ const R64 = [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 10n, 11n, 12n, 13n];
 
 function compress(int64buf: Array<bigint>, state: any) {
   var g = new Array(16);
-  var m: Array<u64> = new Array(16);
+  var m = new Array<bigint>(16);
   for (let uu = 0; uu < 16; uu++) {
-    m[uu] = bigintToU64(int64buf[uu]);
-    g[uu] = bigintToU64(m[uu].bigint ^ state[uu].bigint);
+    m[uu] = int64buf[uu];
+    g[uu] = bigintToU64(m[uu] ^ state[uu].bigint);
   }
   var t = new Array(16);
   for (let r = 0; r < 14; r++) {
@@ -193,29 +193,29 @@ function compress(int64buf: Array<bigint>, state: any) {
   }
   for (let r = 0; r < 14; r++) {
     for (let ii = 0; ii < 16; ii++) {
-      m[ii] = bigintToU64(xor64(m[ii].bigint, R64[r], NJ64[ii]));
+      m[ii] = xor64(m[ii], R64[r], NJ64[ii]);
     }
     for (let uu = 0; uu < 16; uu++) {
       t[uu] = bigintToU64(
         xor64(
-          T0[B64(0, m[(uu + 1) & 0xf])],
-          T1[B64(1, m[(uu + 3) & 0xf])],
-          T2[B64(2, m[(uu + 5) & 0xf])],
-          T3[B64(3, m[(uu + 11) & 0xf])],
-          T4[B64(4, m[(uu + 0) & 0xf])],
-          T5[B64(5, m[(uu + 2) & 0xf])],
-          T6[B64(6, m[(uu + 4) & 0xf])],
-          T7[B64(7, m[(uu + 6) & 0xf])],
+          T0[B64A(0, m[(uu + 1) & 0xf])],
+          T1[B64A(1, m[(uu + 3) & 0xf])],
+          T2[B64A(2, m[(uu + 5) & 0xf])],
+          T3[B64A(3, m[(uu + 11) & 0xf])],
+          T4[B64A(4, m[(uu + 0) & 0xf])],
+          T5[B64A(5, m[(uu + 2) & 0xf])],
+          T6[B64A(6, m[(uu + 4) & 0xf])],
+          T7[B64A(7, m[(uu + 6) & 0xf])],
         ),
       );
     }
     /* tslint:enable:no-bitwise */
-    let temp = m;
-    m = t;
+    let temp = m.map((r) => bigintToU64(r));
+    m = t.map((u) => u.bigint);
     t = temp;
   }
   for (let uu = 0; uu < 16; uu++) {
-    state[uu] = bigintToU64(xor64(state[uu].bigint, g[uu].bigint, m[uu].bigint));
+    state[uu] = bigintToU64(xor64(state[uu].bigint, g[uu].bigint, m[uu]));
   }
 }
 
