@@ -1,10 +1,17 @@
-import { B58CheckVersion, BS58, makeBech32Segwit } from "./bitcoin.js";
+import { B58CheckVersion, makeBech32Segwit } from "./bitcoin.js";
 import { base58, base64 } from "@scure/base";
 
 // const bs58DecodeNoCheck = bs.bs58DecodeNoCheck
 // import { decode as bs58DecodeNoCheck, encode as bs58EncodeNoCheck } from "bs58";
 import type { IFormat } from "./format.js";
 import { bytesToHex, concatBytes, hexToBytes, toBytes } from "@noble/hashes/utils";
+
+type Context = {
+  buffer: Uint8Array;
+  state: Array<u64>;
+  ptr: number;
+  count: number;
+};
 
 function makeGroestlcoinDecoder(
   hrp: string,
@@ -33,21 +40,16 @@ function integerToBytes(i: number): Uint8Array {
   return Uint8Array.of((i & 0xff000000) >> 24, (i & 0x00ff0000) >> 16, (i & 0x0000ff00) >> 8, (i & 0x000000ff) >> 0);
 }
 
-function groestl(ctx: any, data: any, len: any) {
-  let buf;
-  let ptr;
-  //create a local copy of states
-  var V = new Array<u64>(16);
-  buf = ctx.buffer;
-  ptr = ctx.ptr;
+function groestl(ctx: Context, data: Uint8Array, len: number) {
+  let buf = ctx.buffer;
+  let ptr = ctx.ptr;
+  const V = Array.from<u64>({ length: 16 }).map((_, index) => ctx.state[index]);
   if (len < ctx.buffer.length - ptr) {
-    bufferInsert(buf, ptr, data, data.length);
+    buf.set(data, ptr);
     ptr += data.length;
     ctx.ptr = ptr;
     return;
   }
-  //perform a deep copy of current state
-  bufferInsert(V, 0, ctx.state, 16);
   while (len > 0) {
     let clen = ctx.buffer.length - ptr;
     if (clen > len) {
@@ -253,7 +255,7 @@ function groestlClose(ctx: any, a?: any, b?: any): Uint8Array {
   pad.set(numberToBytesBE(count, 8), padLen - 8);
   groestl(ctx, pad, padLen);
   final(ctx.state);
-  const out = new Array(16);
+  const out = new Array<number>(16);
   for (let uu = 0, v = 8; uu < 8; uu++, v++) {
     out[2 * uu] = ctx.state[v].hi;
     out[2 * uu + 1] = ctx.state[v].lo;
