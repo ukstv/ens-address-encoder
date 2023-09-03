@@ -4,6 +4,7 @@ import { hexToBytes } from "@noble/hashes/utils";
 import { fromCoder } from "./format.js";
 import { makeGroestlCoder } from "./groestl.js";
 import { base32, base58 } from "@scure/base";
+import { makeChecksummedHexCoder } from "./eth.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -32,6 +33,7 @@ export const FORMATS: Array<IFormat> = [
   c("XEM", 43, base32),
   c("AIB", 55, makeBitcoinBase58Check(h("17"), h("05"))),
   c("SYS", 57, makeBitcoinCoder("sys", h("3f"), h("05"))),
+  c("ETH", 60, makeChecksummedHexCoder()),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(

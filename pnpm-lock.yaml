@@ -17,6 +17,9 @@ dependencies:
   crypto-addr-codec:
     specifier: ^0.1.8
     version: 0.1.8
+  sha3:
+    specifier: ^2.1.4
+    version: 2.1.4
 
 devDependencies:
   '@scure/base':

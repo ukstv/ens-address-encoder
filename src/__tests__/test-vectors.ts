@@ -148,13 +148,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "sys1qlfz9tcds52ajh25v2a85ur22rt2mm488twvs5l", hex: "0014fa4455e1b0a2bb2baa8c574f4e0d4a1ad5bdd4e7" },
     ],
   },
-  // {
-  //   name: "ETH",
-  //   coinType: 60,
-  //   passingVectors: [
-  //     { text: "0x314159265dD8dbb310642f98f50C066173C1259b", hex: "314159265dd8dbb310642f98f50c066173c1259b" },
-  //   ],
-  // },
+  {
+    name: "ETH",
+    coinType: 60,
+    passingVectors: [
+      { text: "0x314159265dD8dbb310642f98f50C066173C1259b", hex: "314159265dd8dbb310642f98f50c066173c1259b" },
+    ],
+  },
   // {
   //   name: "ETC_LEGACY",
   //   coinType: 61,
