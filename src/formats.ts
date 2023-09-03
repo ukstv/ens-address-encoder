@@ -3,11 +3,12 @@ import { BS58, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin
 import { hexToBytes } from "@noble/hashes/utils";
 import { fromCoder } from "./format.js";
 import { makeGroestlCoder } from "./chains/groestl";
-import { base32, base58 } from "@scure/base";
+import { base32, base58, BytesCoder, hex, utf8, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
 import { icxCoder } from "./chains/icx.js";
 import { arkCoder } from "./chains/ark.js";
 import { makeBech32Coder } from "./chains/atom.js";
+import { zenCoder } from "./chains/zen.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -45,7 +46,7 @@ export const FORMATS: Array<IFormat> = [
   c("ATOM", 118, makeBech32Coder("cosmos")),
   c("ZIL", 119, makeBech32Coder("zil")),
   c("EGLD", 120, makeBech32Coder("erd")),
-  //   getConfig('ZEN', 121, zenEncoder, zenDecoder),
+  c("ZEN", 121, zenCoder),
   //   getConfig('XMR', 128, xmrAddressEncoder, xmrAddressDecoder),
   //   zcashChain('ZEC', 133, 'zs', [[0x1c, 0xb8]], [[0x1c, 0xbd]]),
   //   getConfig('LSK', 134, liskAddressEncoder, liskAddressDecoder),
