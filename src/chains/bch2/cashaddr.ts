@@ -262,19 +262,19 @@ function toUint5Array(data: Uint8Array): Uint8Array {
 }
 
 function polymod(data: ArrayLike<number>): bigInt.BigInteger {
-  var GENERATOR = [0x98f2bc8e61, 0x79b76d99e2, 0xf33e5fb3c4, 0xae2eabe2a8, 0x1e4f43e470];
-  var checksum = bigInt(1);
+  const GENERATOR = [0x98f2bc8e61n, 0x79b76d99e2n, 0xf33e5fb3c4n, 0xae2eabe2a8n, 0x1e4f43e470n];
+  let checksum = 1n;
   for (var i = 0; i < data.length; ++i) {
-    var value = data[i];
-    var topBits = checksum.shiftRight(35);
-    checksum = checksum.and(0x07ffffffff).shiftLeft(5).xor(value);
+    const value = data[i];
+    const topBits = bigInt(checksum).shiftRight(35);
+    checksum = BigInt(bigInt(checksum & 0x07ffffffffn).shiftLeft(5).xor(value).toString());
     for (var j = 0; j < GENERATOR.length; ++j) {
       if (topBits.shiftRight(j).and(1).equals(1)) {
-        checksum = checksum.xor(GENERATOR[j]);
+        checksum = BigInt(bigInt(checksum).xor(GENERATOR[j]).toString());
       }
     }
   }
-  return checksum.xor(1);
+  return bigInt(checksum).xor(1);
 }
 
 /**
