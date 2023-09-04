@@ -22,7 +22,7 @@ import { nimCoder } from "./chains/nim.js";
 import { sha512_256 } from "@noble/hashes/sha512";
 import { vsysCoder } from "./chains/vsys.js";
 import { nearCoder } from "./chains/near.js";
-import { dotCoder, ksmCoder } from "./chains/dot.js";
+import { dotCoder } from "./chains/dot.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -100,7 +100,7 @@ export const FORMATS: Array<IFormat> = [
   c("CKB", 309, makeBech32Coder("ckb")),
   c("MRX", 326, BS58),
   c("LUNA", 330, makeBech32Coder("terra")),
-  c("DOT", 354, dotCoder),
+  c("DOT", 354, dotCoder(0)),
   c("VSYS", 360, vsysCoder),
   c("ABBC", 367, makeEosCoder("ABBC")),
   c("NEAR", 397, nearCoder),
@@ -114,7 +114,7 @@ export const FORMATS: Array<IFormat> = [
     ),
   ),
   c("AION", 425, utils.chain(hex, stringPrefixCoder("0x"))),
-  c("KSM", 434, ksmCoder),
+  c("KSM", 434, dotCoder(2)),
   // getConfig("KSM", 434, ksmAddrEncoder, ksmAddrDecoder),
   //   getConfig('AE', 457, aeAddressEncoder, aeAddressDecoder),
   //   bech32Chain('KAVA', 459, 'kava'),
