@@ -3,7 +3,7 @@ import { fromCoder } from "./format.js";
 import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
 import { hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
-import { base32, base58, base58xmr } from "@scure/base";
+import { base32, base58, base58xmr, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
 import { icxCoder } from "./chains/icx.js";
 import { arkCoder } from "./chains/ark.js";
@@ -16,6 +16,7 @@ import { xrpCodec } from "./chains/xrp.js";
 import { bchCodec } from "./chains/bch.js";
 import { xlmCoder } from "./chains/xlm.js";
 import { nanoCoder } from "./chains/nano.js";
+import { keccak_256 } from "@noble/hashes/sha3";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -67,8 +68,12 @@ export const FORMATS: Array<IFormat> = [
   c("BTM", 153, makeBech32Segwit("bm")),
   c("BTG", 156, makeBitcoinCoder("btg", h("26"), h("17"))),
   c("NANO", 165, nanoCoder),
-  c('RVN', 175, makeBitcoinBase58Check(h('3C'), h('7A'))),
-  c('POA_LEGACY', 178, makeChecksummedHexCoder())
+  c("RVN", 175, makeBitcoinBase58Check(h("3C"), h("7A"))),
+  c("POA_LEGACY", 178, makeChecksummedHexCoder()),
+  c("LCC", 192, makeBitcoinCoder("lcc", h("1C"), h("32", "05"))),
+  c("EOS", 194, makeEosCoder("EOS")),
+  c("TRX", 195, BS58),
+  c("BCN", 204, utils.chain(utils.checksum(4, keccak_256), base58xmr)),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(

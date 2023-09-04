@@ -416,51 +416,51 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8", hex: "be0eb53f46cd790cd13851d5eff43d12404d33e8" },
     ],
   },
-  // {
-  //   name: "LCC",
-  //   coinType: 192,
-  //   passingVectors: [
-  //     { text: "CJkeBGuySxGcdY1wupo7FXT1h8bbv4zFHt", hex: "76a914191b4f0395e2e66c9c1d9ab5e77a3455acf2c67188ac" },
-  //     { text: "MV5hqZU1rNDZ4fubL3Jpc7GMDGHmaVtreg", hex: "a914e8592f26abbbc754209ae58b131d54312a313b5787" },
-  //     { text: "lcc1q45yjegxencjtxslypllvyqfz0xk77mdklxzrcr", hex: "0014ad092ca0d99e24b343e40ffec2012279adef6db6" },
-  //   ],
-  // },
-  // {
-  //   name: "EOS",
-  //   coinType: 194,
-  //   passingVectors: [
-  //     {
-  //       text: "EOS7pyZLEjxhkSBYnPJf585vcZrqdQoA4KsRHDej6i3vsnV7aseh9",
-  //       hex: "03831c26f94b3af1a5f73ec3b961bc617b35bd99afe74bc1fe2c15d6d09bd4a416",
-  //     },
-  //     {
-  //       text: "EOS51imoRdUT7THtgrrVxPfYwRk3V5jVmrj18D7hbk1FQFexNmCv1",
-  //       hex: "02106b727b87e01b0a298253655e7b0848ce3f4ec152ae6574643c0400ec3d1816",
-  //     },
-  //   ],
-  // },
-  // {
-  //   name: "TRX",
-  //   coinType: 195,
-  //   passingVectors: [
-  //     { text: "TUrMmF9Gd4rzrXsQ34ui3Wou94E7HFuJQh", hex: "41cf1ecacaf90a04bb0297f9991ae1262d0a3399e1" },
-  //     { text: "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW", hex: "415a523b449890854c8fc460ab602df9f31fe4293f" },
-  //   ],
-  // },
-  // {
-  //   name: "BCN",
-  //   coinType: 204,
-  //   passingVectors: [
-  //     {
-  //       text: "21UQFLdH7WvPZEd8HNwXncHtDwFvv4GRqaN3R4cWyuw2TRZxRtRPb7FFTxfcwwQsqYSD2EqhgVCLsGdRdejAoHFHAHJrxxo",
-  //       hex: "0606fd971eb1513f86da272c0e64700d64f013286f1bd024c7768bbfc24b36bd9df9f02985759782567ac26311e9637f96b452da1cb5e15c5d6f0c15cdd107bc52",
-  //     },
-  //     {
-  //       text: "bcnZ6VSM78fQNL5js7VnCybbs3ojLbdAD4DfbdJkUqghYWLqXeEgdyo9UyiAZKnB548DK1ofu8wed3jYCPT62zpf2R97SejoT7",
-  //       hex: "cef6222d354172048bb4e38b4b62d78aceddca4ea16a5b66133dcaec3bc71346bc5c87f5891aa07632b67a864ef9393b2b1e8620181e27b610578d4a899c2d88255f0c",
-  //     },
-  //   ],
-  // },
+  {
+    name: "LCC",
+    coinType: 192,
+    passingVectors: [
+      { text: "CJkeBGuySxGcdY1wupo7FXT1h8bbv4zFHt", hex: "76a914191b4f0395e2e66c9c1d9ab5e77a3455acf2c67188ac" },
+      { text: "MV5hqZU1rNDZ4fubL3Jpc7GMDGHmaVtreg", hex: "a914e8592f26abbbc754209ae58b131d54312a313b5787" },
+      { text: "lcc1q45yjegxencjtxslypllvyqfz0xk77mdklxzrcr", hex: "0014ad092ca0d99e24b343e40ffec2012279adef6db6" },
+    ],
+  },
+  {
+    name: "EOS",
+    coinType: 194,
+    passingVectors: [
+      {
+        text: "EOS7pyZLEjxhkSBYnPJf585vcZrqdQoA4KsRHDej6i3vsnV7aseh9",
+        hex: "03831c26f94b3af1a5f73ec3b961bc617b35bd99afe74bc1fe2c15d6d09bd4a416",
+      },
+      {
+        text: "EOS51imoRdUT7THtgrrVxPfYwRk3V5jVmrj18D7hbk1FQFexNmCv1",
+        hex: "02106b727b87e01b0a298253655e7b0848ce3f4ec152ae6574643c0400ec3d1816",
+      },
+    ],
+  },
+  {
+    name: "TRX",
+    coinType: 195,
+    passingVectors: [
+      { text: "TUrMmF9Gd4rzrXsQ34ui3Wou94E7HFuJQh", hex: "41cf1ecacaf90a04bb0297f9991ae1262d0a3399e1" },
+      { text: "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW", hex: "415a523b449890854c8fc460ab602df9f31fe4293f" },
+    ],
+  },
+  {
+    name: "BCN",
+    coinType: 204,
+    passingVectors: [
+      {
+        text: "21UQFLdH7WvPZEd8HNwXncHtDwFvv4GRqaN3R4cWyuw2TRZxRtRPb7FFTxfcwwQsqYSD2EqhgVCLsGdRdejAoHFHAHJrxxo",
+        hex: "0606fd971eb1513f86da272c0e64700d64f013286f1bd024c7768bbfc24b36bd9df9f02985759782567ac26311e9637f96b452da1cb5e15c5d6f0c15cdd107bc52",
+      },
+      {
+        text: "bcnZ6VSM78fQNL5js7VnCybbs3ojLbdAD4DfbdJkUqghYWLqXeEgdyo9UyiAZKnB548DK1ofu8wed3jYCPT62zpf2R97SejoT7",
+        hex: "cef6222d354172048bb4e38b4b62d78aceddca4ea16a5b66133dcaec3bc71346bc5c87f5891aa07632b67a864ef9393b2b1e8620181e27b610578d4a899c2d88255f0c",
+      },
+    ],
+  },
   // {
   //   name: "FIO",
   //   coinType: 235,
