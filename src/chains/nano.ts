@@ -24,8 +24,8 @@ export const nanoCoder: BytesCoder = {
 
 function nanoRadixConvert(data: ArrayLike<number>, from: number, to: number) {
   const length = data.length;
-  const leftover = (length * 8) % 5;
-  const offset = leftover === 0 ? 0 : 5 - leftover;
+  const leftover = (length * from) % to;
+  const offset = leftover === 0 ? 0 : to - leftover;
 
   let carry = 0;
   let pos = 0; // bitwise position in current element
