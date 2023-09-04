@@ -11,6 +11,9 @@ dependencies:
   '@noble/hashes':
     specifier: ^1.3.2
     version: 1.3.2
+  base-x:
+    specifier: ^4.0.0
+    version: 4.0.0
   bech32:
     specifier: ^2.0.0
     version: 2.0.0
