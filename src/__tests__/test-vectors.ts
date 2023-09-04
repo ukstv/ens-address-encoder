@@ -566,16 +566,16 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "terra1pdx498r0hrc2fj36sjhs8vuhrz9hd2cw0tmam9", hex: "0b4d529c6fb8f0a4ca3a84af03b397188b76ab0e" },
     ],
   },
-  // {
-  //   name: "DOT",
-  //   coinType: 354,
-  //   passingVectors: [
-  //     {
-  //       text: "1FRMM8PEiWXYax7rpS6X4XZX1aAAxSWx1CrKTyrVYhV24fg",
-  //       hex: "0aff6865635ae11013a83835c019d44ec3f865145943f487ae82a8e7bed3a66b",
-  //     },
-  //   ],
-  // },
+  {
+    name: "DOT",
+    coinType: 354,
+    passingVectors: [
+      {
+        text: "1FRMM8PEiWXYax7rpS6X4XZX1aAAxSWx1CrKTyrVYhV24fg",
+        hex: "0aff6865635ae11013a83835c019d44ec3f865145943f487ae82a8e7bed3a66b",
+      },
+    ],
+  },
   // {
   //   name: "VSYS",
   //   coinType: 360,

@@ -20,6 +20,8 @@ import { keccak_256 } from "@noble/hashes/sha3";
 import { base32unpadded, bytePrefixCoder, equalBytes } from "./chains/numbers-bytes.js";
 import { nimCoder } from "./chains/nim.js";
 import { sha512_256 } from "@noble/hashes/sha512";
+import { ss58Decode, ss58Encode } from "crypto-addr-codec";
+import { dotAddrEncoder, ksmAddrDecoder } from "./chains/dot";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -97,9 +99,7 @@ export const FORMATS: Array<IFormat> = [
   c("CKB", 309, makeBech32Coder("ckb")),
   c("MRX", 326, BS58),
   c("LUNA", 330, makeBech32Coder("terra")),
-
-
-  // getConfig('DOT', 354, dotAddrEncoder, ksmAddrDecoder),
+  getConfig("DOT", 354, dotAddrEncoder, ksmAddrDecoder),
   //   getConfig('VSYS', 360, vsysAddressEncoder, vsysAddressDecoder),
   //   eosioChain('ABBC', 367, 'ABBC'),
   //   getConfig('NEAR', 397, encodeNearAddr, decodeNearAddr),
