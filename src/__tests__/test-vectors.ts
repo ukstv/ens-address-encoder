@@ -576,13 +576,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       },
     ],
   },
-  // {
-  //   name: "VSYS",
-  //   coinType: 360,
-  //   passingVectors: [
-  //     { text: "ARF12jvtjz9caUFmiwBeRe1SPRGQhUWKrtd", hex: "054d878288c4d4e2dd250560e303476b2152703557a0d3aa3396" },
-  //   ],
-  // },
+  {
+    name: "VSYS",
+    coinType: 360,
+    passingVectors: [
+      { text: "ARF12jvtjz9caUFmiwBeRe1SPRGQhUWKrtd", hex: "054d878288c4d4e2dd250560e303476b2152703557a0d3aa3396" },
+    ],
+  },
   // {
   //   name: "ABBC",
   //   coinType: 367,

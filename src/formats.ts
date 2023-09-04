@@ -1,5 +1,5 @@
 import type { IFormat } from "./format.js";
-import { fromCoder } from "./format.js";
+import { fromCoder, UnrecognizedAddressFormatError } from "./format.js";
 import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
 import { hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
@@ -100,7 +100,7 @@ export const FORMATS: Array<IFormat> = [
   c("MRX", 326, BS58),
   c("LUNA", 330, makeBech32Coder("terra")),
   c("DOT", 354, dotCoder),
-  //   getConfig('VSYS', 360, vsysAddressEncoder, vsysAddressDecoder),
+  c("VSYS", 360, vsysCoder),
   //   eosioChain('ABBC', 367, 'ABBC'),
   //   getConfig('NEAR', 397, encodeNearAddr, decodeNearAddr),
   //   getConfig('ETN', 415, etnAddressEncoder, etnAddressDecoder),
@@ -193,6 +193,44 @@ export const FORMATS: Array<IFormat> = [
   //   evmChain('CELO', 42220),
   //   evmChain('AVAXC', 43114)
 ];
+
+import { blake2b } from "@noble/hashes/blake2b";
+import { vsysCoder } from "./chains/vsys";
+function isByteArrayValid(addressBytes: Uint8Array): boolean {
+  // "M" for mainnet, "T" for test net. Just limited to mainnet
+  if (addressBytes[0] !== 5 || addressBytes[1] !== "M".charCodeAt(0) || addressBytes.length !== 26) {
+    return false;
+  }
+
+  const givenCheckSum = addressBytes.slice(-4);
+  const generatedCheckSum = calcCheckSum(addressBytes.slice(0, -4));
+  return equalBytes(givenCheckSum, generatedCheckSum);
+}
+function calcCheckSum(withoutChecksum: Uint8Array): Uint8Array {
+  return keccak_256(blake2b(withoutChecksum, { dkLen: 32 })).slice(0, 4);
+}
+function vsysAddressEncoder(data: Uint8Array): string {
+  if (!isByteArrayValid(data)) {
+    throw new UnrecognizedAddressFormatError();
+  }
+  return base58.encode(data);
+}
+
+function vsysAddressDecoder(data: string): Uint8Array {
+  let base58String = data;
+  if (data.startsWith("address:")) {
+    base58String = data.substring(0, data.length);
+  }
+  if (base58String.length > 36) {
+    throw new UnrecognizedAddressFormatError();
+  }
+  const bytes = base58.decode(base58String);
+
+  if (!isByteArrayValid(bytes)) {
+    throw new UnrecognizedAddressFormatError();
+  }
+  return bytes;
+}
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
   FORMATS.map((f) => {
