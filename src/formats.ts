@@ -101,7 +101,7 @@ export const FORMATS: Array<IFormat> = [
   c("LUNA", 330, makeBech32Coder("terra")),
   c("DOT", 354, dotCoder),
   c("VSYS", 360, vsysCoder),
-  //   eosioChain('ABBC', 367, 'ABBC'),
+  c("ABBC", 367, makeEosCoder("ABBC")),
   //   getConfig('NEAR', 397, encodeNearAddr, decodeNearAddr),
   //   getConfig('ETN', 415, etnAddressEncoder, etnAddressDecoder),
   //   getConfig('AION', 425, aionEncoder, aionDecoder),
