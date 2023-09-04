@@ -18,7 +18,8 @@ import { xlmCoder } from "./chains/xlm.js";
 import { nanoCoder } from "./chains/nano.js";
 import { keccak_256 } from "@noble/hashes/sha3";
 import { bs58Decode, bs58Encode } from "crypto-addr-codec";
-import { literalPrefixCodec } from "./chains/numbers-bytes";
+import { bytePrefixCoder, stringPrefixCodec } from "./chains/numbers-bytes";
+import { nimCoder } from "./chains/nim.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -77,8 +78,9 @@ export const FORMATS: Array<IFormat> = [
   c("TRX", 195, BS58),
   c("BCN", 204, utils.chain(utils.checksum(4, keccak_256), base58xmr)),
   c("FIO", 235, makeEosCoder("FIO")),
-  c("BSV", 236, utils.chain(literalPrefixCodec(Uint8Array.from([0])), BS58)),
+  c("BSV", 236, utils.chain(bytePrefixCoder(Uint8Array.from([0])), BS58)),
   c("NEO", 239, BS58),
+  c("NIM", 242, nimCoder),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(

@@ -32,7 +32,7 @@ export function B64(n: number, x: bigint): number {
   return numberToBytes(x, 8)[n];
 }
 
-export function literalPrefixCodec(prefix: Uint8Array): Coder<Uint8Array, Uint8Array> {
+export function bytePrefixCoder(prefix: Uint8Array): Coder<Uint8Array, Uint8Array> {
   return {
     encode(from: Uint8Array): Uint8Array {
       return concatBytes(prefix, from);
@@ -43,6 +43,19 @@ export function literalPrefixCodec(prefix: Uint8Array): Coder<Uint8Array, Uint8A
         throw new UnrecognizedAddressFormatError();
       }
       return to.subarray(prefix.length);
+    },
+  };
+}
+
+export function stringPrefixCodec(prefix: string): Coder<string, string> {
+  return {
+    encode(from: string): string {
+      return `${prefix}${from}`;
+    },
+    decode(to: string): string {
+      const actualPrefix = to.substring(0, prefix.length);
+      if (actualPrefix !== prefix) throw new UnrecognizedAddressFormatError();
+      return to.substring(prefix.length);
     },
   };
 }
