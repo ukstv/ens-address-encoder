@@ -1,11 +1,12 @@
 // Ported from https://www.npmjs.com/package/@glif/filecoin-address to reduce file size
 
-import { b32decode, b32encode, hex2a } from "crypto-addr-codec";
+import { b32decode } from "crypto-addr-codec";
 import { blake2b } from "@noble/hashes/blake2b";
 import Bn from "bn.js";
 import { UnrecognizedAddressFormatError } from "../format";
-import { equalBytes } from "./numbers-bytes.js";
+import { base32unpadded, equalBytes } from "./numbers-bytes.js";
 import { BytesCoder } from "@scure/base";
+import { concatBytes } from "@noble/hashes/utils";
 
 const NETWORKS = ["t", "f"];
 
@@ -72,14 +73,14 @@ function filDecode(address: string) {
   const raw = address.slice(2);
 
   if (protocol === 0) {
-    return filNewAddress(protocol, Buffer.from(lebEncode(raw)));
+    return filNewAddress(protocol, lebEncode(raw));
   }
 
-  const payloadChecksum = Buffer.from(b32decode(raw.toUpperCase()));
+  const payloadChecksum = base32unpadded.decode(raw.toUpperCase());
   const { length } = payloadChecksum;
   const payload = payloadChecksum.slice(0, length - 4);
   const checksum = payloadChecksum.slice(length - 4, length);
-  if (!isChecksumCorrect(Buffer.concat([protocolByte, payload]), checksum)) {
+  if (!isChecksumCorrect(concatBytes(protocolByte, payload), checksum)) {
     throw new UnrecognizedAddressFormatError();
   }
 
@@ -105,12 +106,11 @@ function filEncode(network: string, address: Address) {
       break;
     }
     default: {
-      const protocolByte = Buffer.from([protocol]);
-      const toChecksum = Buffer.concat([protocolByte, payload]);
+      const protocolByte = Uint8Array.from([protocol]);
+      const toChecksum = concatBytes(protocolByte, payload);
       const checksum = getChecksum(toChecksum);
-      const bytes = Buffer.concat([payload, Buffer.from(checksum)]);
-      const bytes2a = hex2a(bytes.toString("hex"));
-      const bytes32encoded = b32encode(bytes2a).replace(/=/g, "").toLowerCase();
+      const bytes = concatBytes(payload, Uint8Array.from(checksum));
+      const bytes32encoded = base32unpadded.encode(bytes).toLowerCase();
       addressString = String(network) + String(protocol) + bytes32encoded;
       break;
     }
@@ -120,7 +120,7 @@ function filEncode(network: string, address: Address) {
 
 function filNewAddress(protocol: number, payload: Uint8Array): Address {
   const protocolByte = Uint8Array.from([protocol]);
-  const input = Buffer.concat([protocolByte, payload]);
+  const input = concatBytes(protocolByte, payload);
   return new Address(input);
 }
 
@@ -135,8 +135,8 @@ export const filCoder: BytesCoder = {
 };
 
 class Address {
-  public str: Buffer;
-  constructor(str: Buffer) {
+  public str: Uint8Array;
+  constructor(str: Uint8Array) {
     if (!str || str.length < 1) {
       throw new Error("Missing str in address");
     }
@@ -152,7 +152,7 @@ class Address {
     return this.str[0];
   }
 
-  public payload(): Buffer {
+  public payload(): Uint8Array {
     if (this.str.length < 1) {
       throw Error("No address found.");
     }
@@ -161,10 +161,10 @@ class Address {
 }
 
 class Stream {
-  public buffer: Buffer;
+  public buffer: Uint8Array;
   private bytesRead: number;
 
-  constructor(buf: Buffer = Buffer.from([])) {
+  constructor(buf: Uint8Array = Uint8Array.from([])) {
     this.buffer = buf;
     this.bytesRead = 0;
   }
@@ -177,7 +177,7 @@ class Stream {
   }
 
   public write(buf: [any]) {
-    this.buffer = Buffer.concat([this.buffer, Buffer.from(buf)]);
+    this.buffer = concatBytes(this.buffer, Uint8Array.from(buf));
   }
 }
 
@@ -217,12 +217,7 @@ function write(num: string | number, stream: Stream) {
   }
 }
 
-/**
- * LEB128 encodeds an interger
- * @param {String|Number} num
- * @return {Buffer}
- */
-export function lebEncode(num: string | number) {
+export function lebEncode(num: string | number): Uint8Array {
   const stream = new Stream();
   write(num, stream);
   return stream.buffer;
@@ -230,10 +225,8 @@ export function lebEncode(num: string | number) {
 
 /**
  * decodes a LEB128 encoded interger
- * @param {Buffer} buffer
- * @return {String}
  */
-export function lebDecode(buffer: Buffer) {
+export function lebDecode(buffer: Uint8Array): Uint8Array {
   const stream = new Stream(buffer);
   return read(stream);
 }
