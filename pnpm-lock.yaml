@@ -20,6 +20,9 @@ dependencies:
   bs58:
     specifier: ^5.0.0
     version: 5.0.0
+  bs58check:
+    specifier: ^3.0.1
+    version: 3.0.1
   crypto-addr-codec:
     specifier: ^0.1.8
     version: 0.1.8
@@ -131,6 +134,13 @@ packages:
     resolution: {integrity: sha512-r+ihvQJvahgYT50JD05dyJNKlmmSlMoOGwn1lCcEzanPglg7TxYjioQUYehQ9mAR/+hOSd2jRc/Z2y5UxBymvQ==}
     dependencies:
       base-x: 4.0.0
+    dev: false
+
+  /bs58check@3.0.1:
+    resolution: {integrity: sha512-hjuuJvoWEybo7Hn/0xOrczQKKEKD63WguEjlhLExYs2wUBcebDC1jDNK17eEAD2lYfw82d5ASC1d7K3SWszjaQ==}
+    dependencies:
+      '@noble/hashes': 1.3.2
+      bs58: 5.0.0
     dev: false
 
   /buffer@6.0.3:
