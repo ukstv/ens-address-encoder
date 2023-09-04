@@ -951,13 +951,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "0x314159265dD8dbb310642f98f50C066173C1259b", hex: "314159265dd8dbb310642f98f50c066173c1259b" },
     ],
   },
-  // {
-  //   name: "ONE",
-  //   coinType: 1023,
-  //   passingVectors: [
-  //     { text: "one103q7qe5t2505lypvltkqtddaef5tzfxwsse4z7", hex: "7c41e0668b551f4f902cfaec05b5bdca68b124ce" },
-  //   ],
-  // },
+  {
+    name: "ONE",
+    coinType: 1023,
+    passingVectors: [
+      { text: "one103q7qe5t2505lypvltkqtddaef5tzfxwsse4z7", hex: "7c41e0668b551f4f902cfaec05b5bdca68b124ce" },
+    ],
+  },
   // {
   //   name: "ONT",
   //   coinType: 1024,

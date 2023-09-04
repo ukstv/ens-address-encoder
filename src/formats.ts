@@ -156,7 +156,7 @@ export const FORMATS: Array<IFormat> = [
   c("BCD", 999, makeBitcoinCoder("bcd", h("00"), h("05"))),
   c("TT_LEGACY", 1001, makeChecksummedHexCoder()),
   c("FTM_LEGACY", 1007, makeChecksummedHexCoder()),
-  //   bech32Chain('ONE', 1023, 'one'),
+  c("ONE", 1023, makeBech32Coder("one")),
   //   getConfig('ONT', 1024, ontAddrEncoder, ontAddrDecoder),
   //   bech32Chain('NOSTR', 1237, 'npub'),
   //   {
