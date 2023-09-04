@@ -32,7 +32,7 @@ export function B64(n: number, x: bigint): number {
   return numberToBytes(x, 8)[n];
 }
 
-export function bytePrefixCoder(prefix: Uint8Array): Coder<Uint8Array, Uint8Array> {
+export function bytePrefixEncoder(prefix: Uint8Array): Coder<Uint8Array, Uint8Array> {
   return {
     encode(from: Uint8Array): Uint8Array {
       return concatBytes(prefix, from);
@@ -45,6 +45,14 @@ export function bytePrefixCoder(prefix: Uint8Array): Coder<Uint8Array, Uint8Arra
       return to.subarray(prefix.length);
     },
   };
+}
+
+export function bytePrefixDecoder(prefix: Uint8Array): Coder<Uint8Array, Uint8Array> {
+  const encoder = bytePrefixEncoder(prefix)
+  return {
+    encode: encoder.decode,
+    decode: encoder.encode
+  }
 }
 
 export function stringPrefixCoder(prefix: string): Coder<string, string> {

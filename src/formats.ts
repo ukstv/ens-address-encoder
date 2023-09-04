@@ -17,7 +17,7 @@ import { bchCodec } from "./chains/bch.js";
 import { xlmCoder } from "./chains/xlm.js";
 import { nanoCoder } from "./chains/nano.js";
 import { keccak_256 } from "@noble/hashes/sha3";
-import { base32unpadded, bytePrefixCoder, stringPrefixCoder } from "./chains/numbers-bytes.js";
+import { base32unpadded, bytePrefixDecoder, bytePrefixEncoder, stringPrefixCoder } from "./chains/numbers-bytes.js";
 import { nimCoder } from "./chains/nim.js";
 import { sha512_256 } from "@noble/hashes/sha512";
 import { vsysCoder } from "./chains/vsys.js";
@@ -82,7 +82,7 @@ export const FORMATS: Array<IFormat> = [
   c("TRX", 195, BS58),
   c("BCN", 204, utils.chain(utils.checksum(4, keccak_256), base58xmr)),
   c("FIO", 235, makeEosCoder("FIO")),
-  c("BSV", 236, utils.chain(bytePrefixCoder(Uint8Array.from([0])), BS58)),
+  c("BSV", 236, utils.chain(bytePrefixEncoder(Uint8Array.from([0])), BS58)),
   c("NEO", 239, BS58),
   c("NIM", 242, nimCoder),
   c("EWT_LEGACY", 246, makeChecksummedHexCoder()),
@@ -109,14 +109,14 @@ export const FORMATS: Array<IFormat> = [
     "ETN",
     415,
     utils.chain(
-      bytePrefixCoder(new Uint8Array([18])),
+      bytePrefixEncoder(new Uint8Array([18])),
       utils.checksum(4, (data) => keccak_256(data).slice(0, 4)),
       base58xmr,
     ),
   ),
   c("AION", 425, utils.chain(hex, stringPrefixCoder("0x"))),
   c("KSM", 434, dotCoder(2)),
-  getConfig("AE", 457, aeAddressEncoder, aeAddressDecoder),
+  c("AE", 457, utils.chain(bytePrefixDecoder(Buffer.from("0x")), BS58, stringPrefixCoder("ak_"))),
   //   bech32Chain('KAVA', 459, 'kava'),
   //   getConfig('FIL', 461, filAddrEncoder, filAddrDecoder),
   //   getConfig('AR', 472, arAddressEncoder, arAddressDecoder),
@@ -203,20 +203,6 @@ export const FORMATS: Array<IFormat> = [
   //   evmChain('CELO', 42220),
   //   evmChain('AVAXC', 43114)
 ];
-
-const F = utils.chain(BS58, stringPrefixCoder("ak_"));
-const G = bytePrefixCoder(Buffer.from("0x"));
-
-function aeAddressEncoder(data: Uint8Array): string {
-  return F.encode(data.slice(2));
-}
-
-function aeAddressDecoder(data: string): Uint8Array {
-  const a = F.decode(data)
-  const r = Buffer.concat([Buffer.from("0x"), a]);
-  console.log('r', Uint8Array.from(r), G.encode(a))
-  return r
-}
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
   FORMATS.map((f) => {
