@@ -1,9 +1,8 @@
 // Ported from https://www.npmjs.com/package/@glif/filecoin-address to reduce file size
 
-import { b32decode } from "crypto-addr-codec";
 import { blake2b } from "@noble/hashes/blake2b";
 import Bn from "bn.js";
-import { UnrecognizedAddressFormatError } from "../format";
+import { UnrecognizedAddressFormatError } from "../format.js";
 import { base32unpadded, equalBytes } from "./numbers-bytes.js";
 import { BytesCoder } from "@scure/base";
 import { concatBytes } from "@noble/hashes/utils";
@@ -73,7 +72,7 @@ function filDecode(address: string) {
   const raw = address.slice(2);
 
   if (protocol === 0) {
-    return filNewAddress(protocol, lebEncode(raw));
+    return filNewAddress(protocol, lebEncode(BigInt(raw)));
   }
 
   const payloadChecksum = base32unpadded.decode(raw.toUpperCase());
@@ -203,7 +202,7 @@ function readBn(stream: Stream) {
   return num;
 }
 
-function write(num: string | number, stream: Stream) {
+function write(num: string | number | bigint, stream: Stream) {
   const bigNum = new Bn(num);
   while (true) {
     const i = bigNum.maskn(7).toNumber();
@@ -217,10 +216,19 @@ function write(num: string | number, stream: Stream) {
   }
 }
 
-export function lebEncode(num: string | number): Uint8Array {
-  const stream = new Stream();
-  write(num, stream);
-  return stream.buffer;
+export function lebEncode(num: bigint | number): Uint8Array {
+  let value = BigInt(num);
+  const bytes: number[] = [];
+  do {
+    let byte = Number(value & 127n); // low-order 7 bits of value
+    value >>= 7n;
+    if (value != 0n) {
+      //   set high-order bit of byte;
+      byte = byte | 128;
+    }
+    bytes.push(byte);
+  } while (value != 0n);
+  return Uint8Array.from(bytes);
 }
 
 /**
