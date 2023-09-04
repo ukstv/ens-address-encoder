@@ -47,6 +47,17 @@ export function bytePrefixCoder(prefix: Uint8Array): Coder<Uint8Array, Uint8Arra
   };
 }
 
+export function stringPrefixCoder(prefix: string): Coder<string, string> {
+  return {
+    encode(from: string): string {
+      return `${prefix}${from}`;
+    },
+    decode(to: string): string {
+      return to.substring(prefix.length);
+    },
+  };
+}
+
 export const base32unpadded = utils.chain(
   utils.radix2(5),
   utils.alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"),

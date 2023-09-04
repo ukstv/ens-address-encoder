@@ -1,9 +1,9 @@
 import type { IFormat } from "./format.js";
 import { fromCoder, UnrecognizedAddressFormatError } from "./format.js";
 import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
-import { concatBytes, hexToBytes } from "@noble/hashes/utils";
+import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
-import { base32, base58, base58xmr, utils } from "@scure/base";
+import { base32, base58, base58xmr, hex, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
 import { icxCoder } from "./chains/icx.js";
 import { arkCoder } from "./chains/ark.js";
@@ -17,7 +17,7 @@ import { bchCodec } from "./chains/bch.js";
 import { xlmCoder } from "./chains/xlm.js";
 import { nanoCoder } from "./chains/nano.js";
 import { keccak_256 } from "@noble/hashes/sha3";
-import { base32unpadded, bytePrefixCoder, equalBytes } from "./chains/numbers-bytes.js";
+import { base32unpadded, bytePrefixCoder, equalBytes, stringPrefixCoder } from "./chains/numbers-bytes.js";
 import { nimCoder } from "./chains/nim.js";
 import { sha512_256 } from "@noble/hashes/sha512";
 import { vsysCoder } from "./chains/vsys.js";
@@ -113,7 +113,8 @@ export const FORMATS: Array<IFormat> = [
       base58xmr,
     ),
   ),
-  //   getConfig('AION', 425, aionEncoder, aionDecoder),
+  c("AION", 425, utils.chain(hex, stringPrefixCoder("0x"))),
+  // getConfig("AION", 425, aionEncoder, aionDecoder),
   //   getConfig('KSM', 434, ksmAddrEncoder, ksmAddrDecoder),
   //   getConfig('AE', 457, aeAddressEncoder, aeAddressDecoder),
   //   bech32Chain('KAVA', 459, 'kava'),
@@ -202,6 +203,28 @@ export const FORMATS: Array<IFormat> = [
   //   evmChain('CELO', 42220),
   //   evmChain('AVAXC', 43114)
 ];
+
+function aionDecoder(data: string): Uint8Array {
+  let address = data;
+
+  if (address == null || address.length === 0 || address.length < 64) {
+    throw new UnrecognizedAddressFormatError();
+  }
+
+  if (address.startsWith("0x")) {
+    address = address.slice(2);
+  }
+
+  if (address.startsWith("a0") && (address.length !== 64 || !address.substring(2).match("^[0-9A-Fa-f]+$"))) {
+    throw new UnrecognizedAddressFormatError();
+  }
+
+  return hexToBytes(address);
+}
+
+function aionEncoder(data: Uint8Array): string {
+  return `0x${bytesToHex(data)}`;
+}
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
   FORMATS.map((f) => {
