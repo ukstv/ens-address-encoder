@@ -4,14 +4,13 @@ import { BytesCoder } from "@scure/base";
 
 const ADDRESS_LENGTH = 8;
 export const flowCoder: BytesCoder = {
-  encode(data0: Uint8Array): string {
-    const data = new Uint8Array(data0);
+  encode(data: Uint8Array): string {
     let addrBytes = new Uint8Array(ADDRESS_LENGTH).fill(0x00);
 
     if (data.length > ADDRESS_LENGTH) {
       addrBytes = data.subarray(-ADDRESS_LENGTH);
     }
-    data.set(addrBytes, ADDRESS_LENGTH - data.length);
+    addrBytes.set(data, ADDRESS_LENGTH - data.length);
 
     return "0x" + bytesToHex(addrBytes).toLowerCase();
   },
