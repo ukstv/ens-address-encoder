@@ -33,9 +33,11 @@
     "base-x": "^4.0.0",
     "bech32": "^2.0.0",
     "big-integer": "^1.6.51",
+    "blakejs": "^1.2.1",
     "bs58": "^5.0.0",
     "bs58check": "^3.0.1",
     "crypto-addr-codec": "^0.1.8",
+    "nano-base32": "^1.0.1",
     "sha3": "^2.1.4"
   }
 }

@@ -1,7 +1,7 @@
 import type { IFormat } from "./format.js";
+import { fromCoder } from "./format.js";
 import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
 import { hexToBytes } from "@noble/hashes/utils";
-import { fromCoder } from "./format.js";
 import { makeGroestlCoder } from "./chains/groestl";
 import { base32, base58, base58xmr } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
@@ -15,6 +15,7 @@ import { makeEosCoder } from "./chains/eos.js";
 import { xrpCodec } from "./chains/xrp.js";
 import { bchCodec } from "./chains/bch.js";
 import { xlmCoder } from "./chains/xlm.js";
+import { nanoCoder } from "./chains/nano.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -65,6 +66,7 @@ export const FORMATS: Array<IFormat> = [
   c("XLM", 148, xlmCoder),
   c("BTM", 153, makeBech32Segwit("bm")),
   c("BTG", 156, makeBitcoinCoder("btg", h("26"), h("17"))),
+  c("NANO", 165, nanoCoder),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
