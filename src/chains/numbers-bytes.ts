@@ -1,5 +1,5 @@
 import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
-import { Coder } from "@scure/base";
+import { Coder, utils } from "@scure/base";
 import { UnrecognizedAddressFormatError } from "../format";
 
 export function bytesToBigInt(bytes: Uint8Array): bigint {
@@ -46,3 +46,9 @@ export function bytePrefixCoder(prefix: Uint8Array): Coder<Uint8Array, Uint8Arra
     },
   };
 }
+
+export const base32unpadded = utils.chain(
+  utils.radix2(5),
+  utils.alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"),
+  utils.join(""),
+);

@@ -1,7 +1,7 @@
 import type { IFormat } from "./format.js";
-import { fromCoder, UnrecognizedAddressFormatError } from "./format.js";
+import { fromCoder } from "./format.js";
 import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
-import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
+import { hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
 import { base32, base58, base58xmr, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
@@ -17,9 +17,9 @@ import { bchCodec } from "./chains/bch.js";
 import { xlmCoder } from "./chains/xlm.js";
 import { nanoCoder } from "./chains/nano.js";
 import { keccak_256 } from "@noble/hashes/sha3";
-import { bytePrefixCoder } from "./chains/numbers-bytes.js";
+import { base32unpadded, bytePrefixCoder, equalBytes } from "./chains/numbers-bytes.js";
 import { nimCoder } from "./chains/nim.js";
-import { b32decode, b32encode, hex2a } from "crypto-addr-codec";
+import { sha512_256 } from "@noble/hashes/sha512";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -82,50 +82,15 @@ export const FORMATS: Array<IFormat> = [
   c("NEO", 239, BS58),
   c("NIM", 242, nimCoder),
   c("EWT_LEGACY", 246, makeChecksummedHexCoder()),
-  getConfig("ALGO", 283, algoEncode, algoDecode),
+  c(
+    "ALGO",
+    283,
+    utils.chain(
+      utils.checksum(4, (data) => sha512_256(data).slice(-4)),
+      base32unpadded,
+    ),
+  ),
 ];
-
-function algoEncode(data0: Uint8Array): string {
-  const data = Buffer.from(data0);
-  // Calculate publicKey checksum
-  const checksum = algoChecksum(data);
-
-  // Append publicKey and checksum
-  const addr = b32encode(hex2a(data.toString("hex").concat(checksum)));
-
-  // Removing the extra '='
-  const cleanAddr = addr.replace(/=/g, "");
-  return cleanAddr;
-}
-
-const AlgoChecksumByteLength = 4;
-const AlgoAddressByteLength = 36;
-
-import { sha512_256 } from "@noble/hashes/sha512";
-
-// Returns 4 last byte (8 chars) of sha512_256(publicKey)
-function algoChecksum(pk: Buffer): string {
-  const checksum = sha512_256(pk).slice(-AlgoChecksumByteLength)
-  return bytesToHex(checksum)
-}
-
-function algoDecode(data: string): Buffer {
-  const decoded = b32decode(data);
-
-  if (decoded.length !== AlgoAddressByteLength) {
-    throw Error("Unrecognised address format");
-  }
-
-  const publicKey = decoded.slice(0, -AlgoChecksumByteLength);
-  const checksum = Buffer.from(decoded.slice(-AlgoChecksumByteLength));
-  const expectedChecksum = algoChecksum(publicKey);
-
-  if (checksum.toString("hex") !== expectedChecksum) {
-    throw Error("Unrecognised address format");
-  }
-
-  return publicKey;
-}
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
   FORMATS.map((f) => {
