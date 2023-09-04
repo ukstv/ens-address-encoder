@@ -17,7 +17,6 @@ export const nanoCoder: BytesCoder = {
   },
   decode(data: string): Uint8Array {
     const decoded = decode(data.substring(5));
-    console.log('d.0', decoded, NANO_BASE_32.decode(data.substring(5)))
 
     return decoded.subarray(0, -5);
   },
@@ -46,6 +45,37 @@ function nanoRadixConvert(data: ArrayLike<number>, from: number, to: number) {
   carry = (carry << (to - (pos + offset))) & mask;
   if (pos > 0) res.push(carry >>> 0);
   return res;
+}
+
+/**
+ * Encode provided Uint8Array using the Nano-specific Base-32 implementeation.
+ * @param {Uint8Array} data Input buffer formatted as a Uint8Array
+ * @returns {string}
+ */
+function encode(data: Uint8Array): string {
+  const length = data.length;
+  const leftover = (length * 8) % 5;
+  const offset = leftover === 0 ? 0 : 5 - leftover;
+
+  let carry = 0;
+  let pos = 0;
+  let output = "";
+
+  for (const n of data) {
+    carry = (carry << 8) | n;
+    pos += 8;
+
+    while (pos >= 5) {
+      output += NANO_ALPHABET[(carry >>> (pos + offset - 5)) & 31];
+      pos -= 5;
+    }
+  }
+
+  if (pos > 0) {
+    output += NANO_ALPHABET[(carry << (5 - (pos + offset))) & 31];
+  }
+
+  return output;
 }
 
 function readChar(char: string): number {
