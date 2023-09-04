@@ -32,6 +32,9 @@ dependencies:
   crypto-addr-codec:
     specifier: ^0.1.8
     version: 0.1.8
+  js-sha512:
+    specifier: ^0.8.0
+    version: 0.8.0
   nano-base32:
     specifier: ^1.0.1
     version: 1.0.1
@@ -393,6 +396,10 @@ packages:
 
   /ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
+    dev: false
+
+  /js-sha512@0.8.0:
+    resolution: {integrity: sha512-PWsmefG6Jkodqt+ePTvBZCSMFgN7Clckjd0O7su3I0+BW2QWUTJNzjktHsztGLhncP2h8mcF9V9Y2Ha59pAViQ==}
     dev: false
 
   /kleur@4.1.5:

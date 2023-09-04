@@ -19,6 +19,7 @@ import { nanoCoder } from "./chains/nano.js";
 import { keccak_256 } from "@noble/hashes/sha3";
 import { bytePrefixCoder } from "./chains/numbers-bytes.js";
 import { nimCoder } from "./chains/nim.js";
+import { b32decode, b32encode, hex2a } from "crypto-addr-codec";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -81,7 +82,52 @@ export const FORMATS: Array<IFormat> = [
   c("NEO", 239, BS58),
   c("NIM", 242, nimCoder),
   c("EWT_LEGACY", 246, makeChecksummedHexCoder()),
+  getConfig("ALGO", 283, algoEncode, algoDecode),
 ];
+
+function algoEncode(data0: Uint8Array): string {
+  const data = Buffer.from(data0);
+  // Calculate publicKey checksum
+  const checksum = algoChecksum(data);
+
+  // Append publicKey and checksum
+  const addr = b32encode(hex2a(data.toString("hex").concat(checksum)));
+
+  // Removing the extra '='
+  const cleanAddr = addr.replace(/=/g, "");
+  return cleanAddr;
+}
+
+const AlgoChecksumByteLength = 4;
+const AlgoAddressByteLength = 36;
+
+import { sha512_256 } from "js-sha512";
+
+// Returns 4 last byte (8 chars) of sha512_256(publicKey)
+function algoChecksum(pk: Buffer): string {
+  return sha512_256
+    .update(pk)
+    .hex()
+    .substr(-AlgoChecksumByteLength * 2);
+}
+
+function algoDecode(data: string): Buffer {
+  const decoded = b32decode(data);
+
+  if (decoded.length !== AlgoAddressByteLength) {
+    throw Error("Unrecognised address format");
+  }
+
+  const publicKey = decoded.slice(0, -AlgoChecksumByteLength);
+  const checksum = Buffer.from(decoded.slice(-AlgoChecksumByteLength));
+  const expectedChecksum = algoChecksum(publicKey);
+
+  if (checksum.toString("hex") !== expectedChecksum) {
+    throw Error("Unrecognised address format");
+  }
+
+  return publicKey;
+}
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
   FORMATS.map((f) => {

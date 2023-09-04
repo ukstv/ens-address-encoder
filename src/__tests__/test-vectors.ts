@@ -498,20 +498,20 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "0x2ce42c2B3aCff7eddcfd32DCB0703F1870b0eBe1", hex: "2ce42c2b3acff7eddcfd32dcb0703f1870b0ebe1" },
     ],
   },
-  // {
-  //   name: "ALGO",
-  //   coinType: 283,
-  //   passingVectors: [
-  //     {
-  //       text: "7777777777777777777777777777777777777777777777777774MSJUVU",
-  //       hex: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-  //     },
-  //     {
-  //       text: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
-  //       hex: "0000000000000000000000000000000000000000000000000000000000000000",
-  //     },
-  //   ],
-  // },
+  {
+    name: "ALGO",
+    coinType: 283,
+    passingVectors: [
+      {
+        text: "7777777777777777777777777777777777777777777777777774MSJUVU",
+        hex: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      },
+      {
+        text: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+        hex: "0000000000000000000000000000000000000000000000000000000000000000",
+      },
+    ],
+  },
   // {
   //   name: "IOST",
   //   coinType: 291,
