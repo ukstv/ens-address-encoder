@@ -6,7 +6,9 @@ import { equalBytes } from "./numbers-bytes.js";
 
 const KNOWN_TYPES = [0, 1, 2, 42, 43, 68, 69];
 const PREFIX = utf8ToBytes("SS58PRE");
+
 const TYPE_0 = new Uint8Array([0]);
+const TYPE_2 = new Uint8Array([2]);
 
 export const dotCoder: BytesCoder = {
   encode(data: Uint8Array): string {
@@ -18,7 +20,7 @@ export const dotCoder: BytesCoder = {
   },
   decode(data: string): Uint8Array {
     const bytes = base58.decode(data);
-    if (KNOWN_TYPES.indexOf(bytes[0]) === -1) {
+    if (!KNOWN_TYPES.includes(bytes[0])) {
       throw new UnrecognizedAddressFormatError();
     }
     const payload = bytes.subarray(1, 33);
@@ -32,15 +34,15 @@ export const dotCoder: BytesCoder = {
 
 export const ksmCoder: BytesCoder = {
   encode(data: Uint8Array):string{
-    const T_PREFIX = new Uint8Array([2]);
-    const body = concatBytes(T_PREFIX, data);
+    const body = concatBytes(TYPE_2, data);
     const hash = blake2b(concatBytes(PREFIX, body));
-    const complete = concatBytes(body, hash.slice(0, 2));
+    const checksum = hash.slice(0, 2);
+    const complete = concatBytes(body, checksum);
     return base58.encode(complete);
   },
   decode(data: string): Uint8Array {
     const bytes = base58.decode(data);
-    if (KNOWN_TYPES.indexOf(bytes[0]) === -1) {
+    if (!KNOWN_TYPES.includes(bytes[0])) {
       throw new UnrecognizedAddressFormatError();
     }
     const payload = bytes.subarray(1, 33);
@@ -50,25 +52,4 @@ export const ksmCoder: BytesCoder = {
     if (!equalBytes(checksum, expectedChecksum)) throw new UnrecognizedAddressFormatError();
     return payload;
   }
-}
-
-export function dotAddrEncoder(data: Uint8Array): string {
-  const body = concatBytes(TYPE_0, data);
-  const hash = blake2b(concatBytes(PREFIX, body));
-  const checksum = hash.slice(0, 2);
-  const complete = concatBytes(body, checksum);
-  return base58.encode(complete);
-}
-
-export function ksmAddrDecoder(data: string): Uint8Array {
-  const bytes = base58.decode(data);
-  if (KNOWN_TYPES.indexOf(bytes[0]) === -1) {
-    throw new UnrecognizedAddressFormatError();
-  }
-  const payload = bytes.subarray(1, 33);
-  const hash = blake2b(concatBytes(PREFIX, bytes.subarray(0, 33)));
-  const checksum = hash.slice(0, 2);
-  const expectedChecksum = bytes.subarray(33, 35);
-  if (!equalBytes(checksum, expectedChecksum)) throw new UnrecognizedAddressFormatError();
-  return payload;
 }
