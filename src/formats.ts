@@ -78,6 +78,7 @@ export const FORMATS: Array<IFormat> = [
   c("BCN", 204, utils.chain(utils.checksum(4, keccak_256), base58xmr)),
   c("FIO", 235, makeEosCoder("FIO")),
   c("BSV", 236, utils.chain(literalPrefixCodec(Uint8Array.from([0])), BS58)),
+  c("NEO", 239, BS58),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(

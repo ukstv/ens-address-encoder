@@ -479,11 +479,11 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "1Ax4gZtb7gAit2TivwejZHYtNNLT18PUXJ", hex: "6d23156cbbdcc82a5a47eee4c2c7c583c18b6bf4" },
     ],
   },
-  // {
-  //   name: "NEO",
-  //   coinType: 239,
-  //   passingVectors: [{ text: "AXaXZjZGA3qhQRTCsyG5uFKr9HeShgVhTF", hex: "17ad5cac596a1ef6c18ac1746dfd304f93964354b5" }],
-  // },
+  {
+    name: "NEO",
+    coinType: 239,
+    passingVectors: [{ text: "AXaXZjZGA3qhQRTCsyG5uFKr9HeShgVhTF", hex: "17ad5cac596a1ef6c18ac1746dfd304f93964354b5" }],
+  },
   // {
   //   name: "NIM",
   //   coinType: 242,
