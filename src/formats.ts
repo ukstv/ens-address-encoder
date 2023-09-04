@@ -149,7 +149,7 @@ export const FORMATS: Array<IFormat> = [
   c("BNB", 714, makeBech32Coder("bnb")),
   c("CLO_LEGACY", 820, makeChecksummedHexCoder()),
   c("HIVE", 825, makeEosCoder("STM")),
-  //   hexChecksumChain('TOMO_LEGACY', 889),
+  c("TOMO_LEGACY", 889, makeChecksummedHexCoder()),
   //   getConfig('HNT', 904, hntAddresEncoder, hntAddressDecoder),
   //   bech32Chain('RUNE', 931, 'thor'),
   //   bitcoinChain('BCD', 999, 'bcd', [[0x00]], [[0x05]]),
