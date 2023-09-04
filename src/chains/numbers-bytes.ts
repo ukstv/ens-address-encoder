@@ -1,4 +1,6 @@
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
+import { Coder } from "@scure/base";
+import { UnrecognizedAddressFormatError } from "../format";
 
 export function bytesToBigInt(bytes: Uint8Array): bigint {
   return hexToNumber(bytesToHex(bytes));
@@ -28,4 +30,19 @@ export function hexToNumber(hex: string): bigint {
  */
 export function B64(n: number, x: bigint): number {
   return numberToBytes(x, 8)[n];
+}
+
+export function literalPrefixCodec(prefix: Uint8Array): Coder<Uint8Array, Uint8Array> {
+  return {
+    encode(from: Uint8Array): Uint8Array {
+      return concatBytes(prefix, from);
+    },
+    decode(to: Uint8Array): Uint8Array {
+      const receivedPrefix = to.subarray(0, prefix.length);
+      if (!equalBytes(receivedPrefix, prefix)) {
+        throw new UnrecognizedAddressFormatError();
+      }
+      return to.subarray(prefix.length);
+    },
+  };
 }

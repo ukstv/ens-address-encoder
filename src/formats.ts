@@ -1,7 +1,7 @@
 import type { IFormat } from "./format.js";
-import { fromCoder } from "./format.js";
+import { fromCoder, UnrecognizedAddressFormatError } from "./format.js";
 import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
-import { hexToBytes } from "@noble/hashes/utils";
+import { concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
 import { base32, base58, base58xmr, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
@@ -17,6 +17,8 @@ import { bchCodec } from "./chains/bch.js";
 import { xlmCoder } from "./chains/xlm.js";
 import { nanoCoder } from "./chains/nano.js";
 import { keccak_256 } from "@noble/hashes/sha3";
+import { bs58Decode, bs58Encode } from "crypto-addr-codec";
+import { literalPrefixCodec } from "./chains/numbers-bytes";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -74,7 +76,8 @@ export const FORMATS: Array<IFormat> = [
   c("EOS", 194, makeEosCoder("EOS")),
   c("TRX", 195, BS58),
   c("BCN", 204, utils.chain(utils.checksum(4, keccak_256), base58xmr)),
-  c('FIO', 235, makeEosCoder('FIO'))
+  c("FIO", 235, makeEosCoder("FIO")),
+  c("BSV", 236, utils.chain(literalPrefixCodec(Uint8Array.from([0])), BS58)),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
