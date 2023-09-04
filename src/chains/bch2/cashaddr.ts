@@ -267,10 +267,10 @@ function polymod(data: ArrayLike<number>): bigInt.BigInteger {
   for (var i = 0; i < data.length; ++i) {
     const value = data[i];
     const topBits = bigInt(checksum).shiftRight(35);
-    checksum = BigInt(bigInt(checksum & 0x07ffffffffn).shiftLeft(5).xor(value).toString());
+    checksum = ((checksum & 0x07ffffffffn) << 5n) ^ BigInt(value);
     for (var j = 0; j < GENERATOR.length; ++j) {
       if (topBits.shiftRight(j).and(1).equals(1)) {
-        checksum = BigInt(bigInt(checksum).xor(GENERATOR[j]).toString());
+        checksum = checksum ^ GENERATOR[j];
       }
     }
   }
