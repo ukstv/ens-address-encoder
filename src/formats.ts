@@ -96,7 +96,7 @@ export const FORMATS: Array<IFormat> = [
   c("BTS", 308, makeEosCoder("BTS")),
   c("CKB", 309, makeBech32Coder("ckb")),
   c("MRX", 326, BS58),
-  //   getConfig('MRX', 326, bs58Encode, bs58Decode),
+  c("LUNA", 330, makeBech32Coder("terra")),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
