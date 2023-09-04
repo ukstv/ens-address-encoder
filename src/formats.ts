@@ -3,7 +3,7 @@ import { fromCoder, UnrecognizedAddressFormatError } from "./format.js";
 import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
 import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
-import { base32, base58, base58xmr, hex, utils } from "@scure/base";
+import { base32, base58, base58xmr, hex, utf8, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
 import { icxCoder } from "./chains/icx.js";
 import { arkCoder } from "./chains/ark.js";
@@ -22,7 +22,8 @@ import { nimCoder } from "./chains/nim.js";
 import { sha512_256 } from "@noble/hashes/sha512";
 import { vsysCoder } from "./chains/vsys.js";
 import { nearCoder } from "./chains/near.js";
-import { dotCoder } from "./chains/dot.js";
+import { dotCoder, ksmAddrDecoder } from "./chains/dot.js";
+import { blake2b } from "@noble/hashes/blake2b";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -114,8 +115,7 @@ export const FORMATS: Array<IFormat> = [
     ),
   ),
   c("AION", 425, utils.chain(hex, stringPrefixCoder("0x"))),
-  // getConfig("AION", 425, aionEncoder, aionDecoder),
-  //   getConfig('KSM', 434, ksmAddrEncoder, ksmAddrDecoder),
+  getConfig("KSM", 434, ksmAddrEncoder, ksmAddrDecoder),
   //   getConfig('AE', 457, aeAddressEncoder, aeAddressDecoder),
   //   bech32Chain('KAVA', 459, 'kava'),
   //   getConfig('FIL', 461, filAddrEncoder, filAddrDecoder),
@@ -222,8 +222,43 @@ function aionDecoder(data: string): Uint8Array {
   return hexToBytes(address);
 }
 
-function aionEncoder(data: Uint8Array): string {
-  return `0x${bytesToHex(data)}`;
+function ksmAddrEncoder(data: Uint8Array): string {
+  return ss58Encode(data, 2);
+}
+const PREFIX = utf8.decode("SS58PRE");
+
+import bs58 from "bs58";
+
+let defaultType = 42;
+const KNOWN_TYPES = [0, 1, 2, 42, 43, 68, 69];
+export function ss58Encode(a: Uint8Array, type = defaultType, checksumLength?: number, length = null, accountId?: any) {
+  let payload;
+  if (a.length === 32 || a.length === 35) {
+    checksumLength = 2;
+    payload = a.length === 35 ? a.slice(1, 33) : a;
+    accountId = payload;
+  } else {
+    throw new Error("Unknown item to encode as ss58. Passing back.", a);
+  }
+  let hash = blake2b(mergeUint8Arrays(PREFIX, type & 1 ? accountId : mergeUint8Arrays(type, payload)));
+  let complete = mergeUint8Arrays(mergeUint8Arrays(type, payload), hash.slice(0, checksumLength));
+  return bs58.encode(Buffer.from(complete));
+}
+
+function mergeUint8Arrays(a, b) {
+  if (!a.length) {
+    a = [a];
+  }
+  if (!b.length) {
+    b = [b];
+  }
+
+  const c = new Uint8Array(a.length + b.length);
+
+  c.set(a);
+  c.set(b, a.length);
+
+  return c;
 }
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
