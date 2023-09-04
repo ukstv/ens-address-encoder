@@ -80,16 +80,15 @@ function filDecode(address: string): Uint8Array {
     throw new UnrecognizedAddressFormatError();
   }
 
-  const addressObj = new Address(concatBytes(protocolByte, payload));
-  if (filEncode(network, addressObj) !== address) {
+  if (filEncode(network, concatBytes(protocolByte, payload)) !== address) {
     throw Error(`Did not encode this address properly: ${address}`);
   }
   return concatBytes(protocolByte, payload);
 }
 
-function filEncode(network: string, address: Address) {
-  const payload = address.payload();
-  const protocol = address.protocol();
+function filEncode(network: string, address: Uint8Array) {
+  const payload = address.subarray(1);
+  const protocol = address[0];
 
   switch (protocol) {
     case 0: {
@@ -109,39 +108,12 @@ function filEncode(network: string, address: Address) {
 
 export const filCoder: BytesCoder = {
   encode(data: Uint8Array): string {
-    const address = new Address(data);
-    return filEncode("f", address).toString();
+    return filEncode("f", data).toString();
   },
   decode(data: string): Uint8Array {
     return filDecode(data);
   },
 };
-
-class Address {
-  public str: Uint8Array;
-  constructor(str: Uint8Array) {
-    if (!str || str.length < 1) {
-      throw new Error("Missing str in address");
-    }
-    this.str = str;
-  }
-
-  // https://beta.spec.filecoin.io/#appendix__address__protocol-indicator
-  public protocol(): number {
-    if (this.str.length < 1) {
-      throw Error("No address found.");
-    }
-
-    return this.str[0];
-  }
-
-  public payload(): Uint8Array {
-    if (this.str.length < 1) {
-      throw Error("No address found.");
-    }
-    return this.str.slice(1, this.str.length);
-  }
-}
 
 // LEB128
 const LEBCoder: Coder<bigint, Uint8Array> = {
