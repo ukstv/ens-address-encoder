@@ -1,7 +1,7 @@
 import type { IFormat } from "./format.js";
 import { fromCoder, UnrecognizedAddressFormatError } from "./format.js";
 import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
-import { hexToBytes } from "@noble/hashes/utils";
+import { concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
 import { base32, base58, base58xmr, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
@@ -20,8 +20,9 @@ import { keccak_256 } from "@noble/hashes/sha3";
 import { base32unpadded, bytePrefixCoder, equalBytes } from "./chains/numbers-bytes.js";
 import { nimCoder } from "./chains/nim.js";
 import { sha512_256 } from "@noble/hashes/sha512";
-import { ss58Decode, ss58Encode } from "crypto-addr-codec";
-import { dotAddrEncoder, dotCoder, ksmAddrDecoder } from "./chains/dot";
+import { vsysCoder } from "./chains/vsys.js";
+import { nearCoder } from "./chains/near.js";
+import { dotCoder } from "./chains/dot.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -103,7 +104,15 @@ export const FORMATS: Array<IFormat> = [
   c("VSYS", 360, vsysCoder),
   c("ABBC", 367, makeEosCoder("ABBC")),
   c("NEAR", 397, nearCoder),
-  //   getConfig('ETN', 415, etnAddressEncoder, etnAddressDecoder),
+  c(
+    "ETN",
+    415,
+    utils.chain(
+      bytePrefixCoder(new Uint8Array([18])),
+      utils.checksum(4, (data) => keccak_256(data).slice(0, 4)),
+      base58xmr,
+    ),
+  ),
   //   getConfig('AION', 425, aionEncoder, aionDecoder),
   //   getConfig('KSM', 434, ksmAddrEncoder, ksmAddrDecoder),
   //   getConfig('AE', 457, aeAddressEncoder, aeAddressDecoder),
@@ -193,65 +202,6 @@ export const FORMATS: Array<IFormat> = [
   //   evmChain('CELO', 42220),
   //   evmChain('AVAXC', 43114)
 ];
-
-function encodeNearAddr(data: Buffer): string {
-  const ndata = data.toString();
-  if (ndata.length > 64 || ndata.length < 2) {
-    throw Error("Invalid address format");
-  }
-  return ndata;
-}
-
-function decodeNearAddr(data: string): Buffer {
-  const regex = /(^(([a-z\d]+[\-_])*[a-z\d]+\.)*([a-z\d]+[\-_])*[a-z\d]+$)/g;
-  if (!regex.test(data)) {
-    throw Error("Invalid address string");
-  } else {
-    if (data.length > 64 || data.length < 2) {
-      throw Error("Invalid address format");
-    }
-    return Buffer.from(data);
-  }
-}
-
-import { blake2b } from "@noble/hashes/blake2b";
-import { vsysCoder } from "./chains/vsys";
-import { nearCoder } from "./chains/near";
-function isByteArrayValid(addressBytes: Uint8Array): boolean {
-  // "M" for mainnet, "T" for test net. Just limited to mainnet
-  if (addressBytes[0] !== 5 || addressBytes[1] !== "M".charCodeAt(0) || addressBytes.length !== 26) {
-    return false;
-  }
-
-  const givenCheckSum = addressBytes.slice(-4);
-  const generatedCheckSum = calcCheckSum(addressBytes.slice(0, -4));
-  return equalBytes(givenCheckSum, generatedCheckSum);
-}
-function calcCheckSum(withoutChecksum: Uint8Array): Uint8Array {
-  return keccak_256(blake2b(withoutChecksum, { dkLen: 32 })).slice(0, 4);
-}
-function vsysAddressEncoder(data: Uint8Array): string {
-  if (!isByteArrayValid(data)) {
-    throw new UnrecognizedAddressFormatError();
-  }
-  return base58.encode(data);
-}
-
-function vsysAddressDecoder(data: string): Uint8Array {
-  let base58String = data;
-  if (data.startsWith("address:")) {
-    base58String = data.substring(0, data.length);
-  }
-  if (base58String.length > 36) {
-    throw new UnrecognizedAddressFormatError();
-  }
-  const bytes = base58.decode(base58String);
-
-  if (!isByteArrayValid(bytes)) {
-    throw new UnrecognizedAddressFormatError();
-  }
-  return bytes;
-}
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
   FORMATS.map((f) => {
