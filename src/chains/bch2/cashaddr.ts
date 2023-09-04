@@ -8,7 +8,6 @@
  */
 
 import * as scureBase from "@scure/base";
-import * as base32 from "./base32.js";
 import bigInt from "big-integer";
 import bs58check from "bs58check";
 import { convertBits } from "./convertBits.js";
@@ -62,7 +61,7 @@ function encode(prefix: string, type: string, hash: string | Uint8Array): string
   var payloadData = toUint5Array(concatBytes(new Uint8Array([versionByte]), hash));
   var checksumData = concatBytes(prefixData, payloadData, new Uint8Array(8));
   var payload = concatBytes(payloadData, checksumToUint5Array(polymod(checksumData)));
-  return prefix + ":" + base32.encode(payload);
+  return prefix + ":" + BCH_BASE32.encode(Array.from(payload));
 }
 
 /**
@@ -266,15 +265,15 @@ function polymod(data: ArrayLike<number>): bigInt.BigInteger {
   let checksum = 1n;
   for (var i = 0; i < data.length; ++i) {
     const value = data[i];
-    const topBits = bigInt(checksum).shiftRight(35);
+    const topBits = checksum >> 35n;
     checksum = ((checksum & 0x07ffffffffn) << 5n) ^ BigInt(value);
     for (var j = 0; j < GENERATOR.length; ++j) {
-      if (topBits.shiftRight(j).and(1).equals(1)) {
+      if (((topBits >> BigInt(j)) & 1n) === 1n) {
         checksum = checksum ^ GENERATOR[j];
       }
     }
   }
-  return bigInt(checksum).xor(1);
+  return bigInt(checksum ^ 1n);
 }
 
 /**
