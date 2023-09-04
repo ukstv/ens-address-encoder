@@ -3,20 +3,21 @@ import { makeBitcoinBase58Check } from "./bitcoin.js";
 import { concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { BytesCoder } from "@scure/base";
 import * as cashaddr from "./bch2/cashaddr.js";
+import { AddressType } from "./bch2/cashaddr.js";
 
 export const bchCodec: BytesCoder = {
-  encode(data0: Uint8Array): string {
-    switch (data0[0]) {
+  encode(data: Uint8Array): string {
+    switch (data[0]) {
       case 0x76: // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
-        if (data0[1] !== 0xa9 || data0[data0.length - 2] !== 0x88 || data0[data0.length - 1] !== 0xac) {
+        if (data[1] !== 0xa9 || data[data.length - 2] !== 0x88 || data[data.length - 1] !== 0xac) {
           throw new UnrecognizedAddressFormatError();
         }
-        return cashaddr.encode("bitcoincash", "P2PKH", Buffer.from(data0.subarray(3, 3 + data0[2])));
+        return cashaddr.encode("bitcoincash", AddressType.P2PKH, data.subarray(3, 3 + data[2]));
       case 0xa9: // P2SH: OP_HASH160 <scriptHash> OP_EQUAL
-        if (data0[data0.length - 1] !== 0x87) {
+        if (data[data.length - 1] !== 0x87) {
           throw new UnrecognizedAddressFormatError();
         }
-        return cashaddr.encode("bitcoincash", 'P2SH', Buffer.from(data0.subarray(2, 2 + data0[1])));
+        return cashaddr.encode("bitcoincash", AddressType.P2SH, data.subarray(2, 2 + data[1]));
       default:
         throw new UnrecognizedAddressFormatError();
     }

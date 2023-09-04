@@ -1,12 +1,21 @@
 import * as scureBase from "@scure/base";
-import { validate, ValidationError } from "./validation.js";
-import { UnrecognizedAddressFormatError } from "../../format";
+import { UnrecognizedAddressFormatError } from "../../format.js";
 import { concatBytes } from "@noble/hashes/utils";
 
 export enum AddressType {
   P2PKH = "P2PKH",
   P2SH = "P2SH",
 }
+
+const TYPE_BITS: Record<AddressType, number> = {
+  [AddressType.P2PKH]: 0,
+  [AddressType.P2SH]: 8,
+};
+const TYPE_FROM_BIT: Record<number, AddressType> = Object.fromEntries(
+  Object.entries(TYPE_BITS).map(([k, v]) => {
+    return [v, k as AddressType];
+  }),
+);
 
 const BCH_BASE32 = scureBase.utils.chain(
   scureBase.utils.alphabet("qpzry9x8gf2tvdw0s3jn54khce6mua7l"),
@@ -29,20 +38,10 @@ const HASH_SIZE_BITS: Record<number, number> = Object.fromEntries(
   }),
 );
 
-/**
- * Encodes a hash from a given type into an eCash address with the given prefix.
- *
- * @static
- * @param {string} prefix Cash address prefix. E.g.: 'ecash'.
- * @param {string} type Type of address to generate. Either 'P2PKH' or 'P2SH'. Case-insensitive.
- * @param {Uint8Array or string} hash Hash to encode represented as an array of 8-bit integers.
- * @returns {string}
- * @throws {ValidationError}
- */
-function encode(prefix: string, type: string, hash: Uint8Array): string {
-  validate(isValidPrefix(prefix), "Invalid prefix: " + prefix + ".");
+function encode(prefix: string, type: AddressType, hash: Uint8Array): string {
+  if (!isValidPrefix(prefix)) throw new UnrecognizedAddressFormatError();
   const prefixData = concatBytes(prefixToUint5Array(prefix), new Uint8Array(1));
-  const versionByte = getTypeBits(type.toUpperCase()) + HASH_SIZE_BITS[hash.length * 8];
+  const versionByte = TYPE_BITS[type] + HASH_SIZE_BITS[hash.length * 8];
   const payloadData = new Uint8Array(RADIX5.encode(concatBytes(new Uint8Array([versionByte]), hash)));
   const checksumData = concatBytes(prefixData, payloadData, new Uint8Array(8));
   const payload = concatBytes(payloadData, checksumToUint5Array(polymod(checksumData)));
@@ -51,72 +50,43 @@ function encode(prefix: string, type: string, hash: Uint8Array): string {
 
 const VALID_PREFIXES = ["ecash", "bitcoincash", "simpleledger", "etoken", "ectest", "ecregtest", "bchtest", "bchreg"];
 
-/**
- * Decodes the given address into its constituting prefix, type and hash. See [#encode()]{@link encode}.
- *
- * @static
- * @param {string} address Address to decode. E.g.: 'ecash:qpm2qsznhks23z7629mms6s4cwef74vcwva87rkuu2'.
- * @param {returnHashAsString} bool User may ask for the hash160 be returned as a string instead of a uint8array
- * @returns {object}
- * @throws {ValidationError}
- */
-function decode(address: string): { prefix?: string; type?: string; hash: string | Uint8Array } {
+function decode(address: string): { prefix: string; type: string; hash: Uint8Array } {
   if (!hasSingleCase(address)) throw new UnrecognizedAddressFormatError();
-  const pieces = address.toLowerCase().split(":");
-  // if there is no prefix, it might still be valid
-  if (pieces.length === 1) {
-    let prefix;
-    // Check and see if it has a valid checksum for accepted prefixes
-    let hasValidChecksum = false;
-    const payload = new Uint8Array(BCH_BASE32.decode(pieces[0]));
-    for (let i = 0; i < VALID_PREFIXES.length; i += 1) {
-      const testedPrefix = VALID_PREFIXES[i];
-      hasValidChecksum = validChecksum(testedPrefix, payload);
-      if (hasValidChecksum) {
-        // Here's your prefix
-        prefix = testedPrefix;
-        // Stop testing other prefixes
-        break;
-      }
-    }
-    if (!hasValidChecksum) throw new UnrecognizedAddressFormatError();
-    var payloadData = RADIX5.decode(Array.from(payload.subarray(0, -8)));
-    var versionByte = payloadData[0];
-    var hash = payloadData.subarray(1);
-    validate(HASH_SIZE[versionByte & 7] === hash.length * 8, "Invalid hash size: " + address + ".");
-    const type = getType(versionByte);
-    return {
-      prefix: prefix,
-      type: type,
-      hash: hash,
-    };
-  } else {
-    if (pieces.length !== 2) throw new UnrecognizedAddressFormatError();
-    const prefix = pieces[0];
-    const payload = new Uint8Array(BCH_BASE32.decode(pieces[1]));
-    if (!validChecksum(prefix, payload)) throw new UnrecognizedAddressFormatError();
-    var payloadData = RADIX5.decode(Array.from(payload.subarray(0, -8)));
-    var versionByte = payloadData[0];
-    var hash = payloadData.subarray(1);
-    validate(HASH_SIZE[versionByte & 7] === hash.length * 8, "Invalid hash size: " + address + ".");
-    const type = getType(versionByte);
-    return {
-      prefix: prefix,
-      type: type,
-      hash: hash,
-    };
-  }
-  throw new UnrecognizedAddressFormatError();
+  const parts = decodeParts(address);
+  const payload = parts.payload;
+  const prefix = parts.prefix;
+  const payloadData = RADIX5.decode(Array.from(payload.subarray(0, -8)));
+  const versionByte = payloadData[0];
+  const hash = payloadData.subarray(1);
+  if (HASH_SIZE[versionByte & 7] !== hash.length * 8) throw new UnrecognizedAddressFormatError();
+  const type = TYPE_FROM_BIT[versionByte & 120];
+  return {
+    prefix: prefix,
+    type: type,
+    hash: hash,
+  };
 }
 
-/**
- * Checks whether a string is a valid prefix; ie., it has a single letter case
- * and is one of 'ecash', 'ectest', 'etoken', etc
- *
- * @private
- * @param {string} prefix
- * @returns {boolean}
- */
+function decodeParts(address: string): { prefix: string; payload: Uint8Array } {
+  const pieces = address.toLowerCase().split(":");
+  switch (pieces.length) {
+    case 1: {
+      const payload = new Uint8Array(BCH_BASE32.decode(pieces[0]));
+      const prefix = VALID_PREFIXES.find((prefix) => isChecksumValid(prefix, payload));
+      if (!prefix) throw new UnrecognizedAddressFormatError();
+      return { payload, prefix };
+    }
+    case 2: {
+      const prefix = pieces[0];
+      const payload = new Uint8Array(BCH_BASE32.decode(pieces[1]));
+      if (!isChecksumValid(prefix, payload)) throw new UnrecognizedAddressFormatError();
+      return { payload, prefix };
+    }
+    default:
+      throw new UnrecognizedAddressFormatError();
+  }
+}
+
 function isValidPrefix(prefix: string): boolean {
   return hasSingleCase(prefix) && VALID_PREFIXES.includes(prefix.toLowerCase());
 }
@@ -138,39 +108,6 @@ function checksumToUint5Array(checksum: bigint): Uint8Array {
   return result;
 }
 
-/**
- * Returns the bit representation of the given type within the version
- * byte.
- *
- * @private
- * @param {string} type Address type. Either 'P2PKH' or 'P2SH'.
- * @returns {number}
- * @throws {ValidationError}
- */
-function getTypeBits(type: string) {
-  switch (type) {
-    case "p2pkh":
-    case "P2PKH":
-      return 0;
-    case "p2sh":
-    case "P2SH":
-      return 8;
-    default:
-      throw new ValidationError("Invalid type: " + type + ".");
-  }
-}
-
-function getType(versionByte: number): AddressType {
-  switch (versionByte & 120) {
-    case 0:
-      return AddressType.P2PKH;
-    case 8:
-      return AddressType.P2SH;
-    default:
-      throw new UnrecognizedAddressFormatError();
-  }
-}
-
 function polymod(data: ArrayLike<number>): bigint {
   const GENERATOR = [0x98f2bc8e61n, 0x79b76d99e2n, 0xf33e5fb3c4n, 0xae2eabe2a8n, 0x1e4f43e470n];
   let checksum = 1n;
@@ -187,16 +124,7 @@ function polymod(data: ArrayLike<number>): bigint {
   return checksum ^ 1n;
 }
 
-/**
- * Verify that the payload has not been corrupted by checking that the
- * checksum is valid.
- *
- * @private
- * @param {string} prefix Cash address prefix. E.g.: 'ecash'.
- * @param {Uint8Array} payload Array of 5-bit integers containing the address' payload.
- * @returns {boolean}
- */
-function validChecksum(prefix: string, payload: Uint8Array): boolean {
+function isChecksumValid(prefix: string, payload: Uint8Array): boolean {
   const prefixData = concatBytes(prefixToUint5Array(prefix), new Uint8Array(1));
   const checksumData = concatBytes(prefixData, payload);
   return polymod(checksumData) === 0n;
