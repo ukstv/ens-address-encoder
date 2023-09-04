@@ -80,6 +80,7 @@ export const FORMATS: Array<IFormat> = [
   c("BSV", 236, utils.chain(bytePrefixCoder(Uint8Array.from([0])), BS58)),
   c("NEO", 239, BS58),
   c("NIM", 242, nimCoder),
+  c("EWT_LEGACY", 246, makeChecksummedHexCoder()),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(

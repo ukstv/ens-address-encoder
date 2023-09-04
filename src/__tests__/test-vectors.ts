@@ -491,13 +491,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "NQ18 GAL5 Y1FC 66VV PE1X J82Q 0A2F LYPB 2EY7", hex: "82a85f85ec31bbdbb83e920580284fa7eeb13be7" },
     ],
   },
-  // {
-  //   name: "EWT_LEGACY",
-  //   coinType: 246,
-  //   passingVectors: [
-  //     { text: "0x2ce42c2B3aCff7eddcfd32DCB0703F1870b0eBe1", hex: "2ce42c2b3acff7eddcfd32dcb0703f1870b0ebe1" },
-  //   ],
-  // },
+  {
+    name: "EWT_LEGACY",
+    coinType: 246,
+    passingVectors: [
+      { text: "0x2ce42c2B3aCff7eddcfd32DCB0703F1870b0eBe1", hex: "2ce42c2b3acff7eddcfd32dcb0703f1870b0ebe1" },
+    ],
+  },
   // {
   //   name: "ALGO",
   //   coinType: 283,
