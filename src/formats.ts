@@ -137,6 +137,7 @@ export const FORMATS: Array<IFormat> = [
   c("LRG", 568, makeBitcoinBase58Check(h("1E"), h("0D"))),
   c("SERO", 569, base58),
   c("BDX", 570, base58xmr),
+  c("CCXX", 571, makeBitcoinCoder("ccx", h("89"), h("4B", "05"))),
   //   bitcoinChain('CCXX', 571, 'ccx', [[0x89]], [[0x4b], [0x05]]),
   //   getConfig('SRM', 573, bs58EncodeNoCheck, bs58DecodeNoCheck),
   //   getConfig('VLX', 574, bs58EncodeNoCheck, bs58DecodeNoCheck),
