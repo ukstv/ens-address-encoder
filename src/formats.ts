@@ -116,7 +116,7 @@ export const FORMATS: Array<IFormat> = [
   ),
   c("AION", 425, utils.chain(hex, stringPrefixCoder("0x"))),
   c("KSM", 434, dotCoder(2)),
-    getConfig('AE', 457, aeAddressEncoder, aeAddressDecoder),
+  getConfig("AE", 457, aeAddressEncoder, aeAddressDecoder),
   //   bech32Chain('KAVA', 459, 'kava'),
   //   getConfig('FIL', 461, filAddrEncoder, filAddrDecoder),
   //   getConfig('AR', 472, arAddressEncoder, arAddressDecoder),
@@ -204,12 +204,18 @@ export const FORMATS: Array<IFormat> = [
   //   evmChain('AVAXC', 43114)
 ];
 
+const F = utils.chain(BS58, stringPrefixCoder("ak_"));
+const G = bytePrefixCoder(Buffer.from("0x"));
+
 function aeAddressEncoder(data: Uint8Array): string {
-  return 'ak_' + BS58.encode(data.slice(2));
+  return F.encode(data.slice(2));
 }
 
 function aeAddressDecoder(data: string): Uint8Array {
-  return Buffer.concat([Buffer.from('0x'), BS58.decode(data.split('_')[1])]);
+  const a = F.decode(data)
+  const r = Buffer.concat([Buffer.from("0x"), a]);
+  console.log('r', Uint8Array.from(r), G.encode(a))
+  return r
 }
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
