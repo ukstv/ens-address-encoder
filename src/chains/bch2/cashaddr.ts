@@ -1,12 +1,3 @@
-/**
- * @license
- * https://reviews.bitcoinabc.org
- * Copyright (c) 2017-2020 Emilio Almansi
- * Copyright (c) 2023 Bitcoin ABC
- * Distributed under the MIT software license, see the accompanying
- * file LICENSE or http://www.opensource.org/licenses/mit-license.php.
- */
-
 import * as scureBase from "@scure/base";
 import { validate, ValidationError } from "./validation.js";
 import { UnrecognizedAddressFormatError } from "../../format";
@@ -58,6 +49,8 @@ function encode(prefix: string, type: string, hash: Uint8Array): string {
   return prefix + ":" + BCH_BASE32.encode(Array.from(payload));
 }
 
+const VALID_PREFIXES = ["ecash", "bitcoincash", "simpleledger", "etoken", "ectest", "ecregtest", "bchtest", "bchreg"];
+
 /**
  * Decodes the given address into its constituting prefix, type and hash. See [#encode()]{@link encode}.
  *
@@ -71,24 +64,22 @@ function decode(address: string): { prefix?: string; type?: string; hash: string
   if (!hasSingleCase(address)) throw new UnrecognizedAddressFormatError();
   const pieces = address.toLowerCase().split(":");
   // if there is no prefix, it might still be valid
-  let prefix, payload;
   if (pieces.length === 1) {
+    let prefix;
     // Check and see if it has a valid checksum for accepted prefixes
     let hasValidChecksum = false;
+    const payload = new Uint8Array(BCH_BASE32.decode(pieces[0]));
     for (let i = 0; i < VALID_PREFIXES.length; i += 1) {
       const testedPrefix = VALID_PREFIXES[i];
-      const prefixlessPayload = new Uint8Array(BCH_BASE32.decode(pieces[0]));
-      hasValidChecksum = validChecksum(testedPrefix, prefixlessPayload);
+      hasValidChecksum = validChecksum(testedPrefix, payload);
       if (hasValidChecksum) {
         // Here's your prefix
         prefix = testedPrefix;
-        payload = prefixlessPayload;
         // Stop testing other prefixes
         break;
       }
     }
     if (!hasValidChecksum) throw new UnrecognizedAddressFormatError();
-    if (!payload) throw new Error(`Something went wrong`);
     var payloadData = RADIX5.decode(Array.from(payload.subarray(0, -8)));
     var versionByte = payloadData[0];
     var hash = payloadData.subarray(1);
@@ -101,8 +92,8 @@ function decode(address: string): { prefix?: string; type?: string; hash: string
     };
   } else {
     if (pieces.length !== 2) throw new UnrecognizedAddressFormatError();
-    prefix = pieces[0];
-    payload = new Uint8Array(BCH_BASE32.decode(pieces[1]));
+    const prefix = pieces[0];
+    const payload = new Uint8Array(BCH_BASE32.decode(pieces[1]));
     if (!validChecksum(prefix, payload)) throw new UnrecognizedAddressFormatError();
     var payloadData = RADIX5.decode(Array.from(payload.subarray(0, -8)));
     var versionByte = payloadData[0];
@@ -117,20 +108,6 @@ function decode(address: string): { prefix?: string; type?: string; hash: string
   }
   throw new UnrecognizedAddressFormatError();
 }
-
-/**
- * All valid address prefixes.
- *
- * @private
- */
-var VALID_PREFIXES = ["ecash", "bitcoincash", "simpleledger", "etoken", "ectest", "ecregtest", "bchtest", "bchreg"];
-
-/**
- * Valid mainnet prefixes
- *
- * @private
- */
-var VALID_PREFIXES_MAINNET = ["ecash", "bitcoincash", "simpleledger", "etoken"];
 
 /**
  * Checks whether a string is a valid prefix; ie., it has a single letter case
@@ -220,8 +197,8 @@ function polymod(data: ArrayLike<number>): bigint {
  * @returns {boolean}
  */
 function validChecksum(prefix: string, payload: Uint8Array): boolean {
-  var prefixData = concatBytes(prefixToUint5Array(prefix), new Uint8Array(1));
-  var checksumData = concatBytes(prefixData, payload);
+  const prefixData = concatBytes(prefixToUint5Array(prefix), new Uint8Array(1));
+  const checksumData = concatBytes(prefixData, payload);
   return polymod(checksumData) === 0n;
 }
 
