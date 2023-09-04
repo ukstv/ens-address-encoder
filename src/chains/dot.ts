@@ -30,6 +30,28 @@ export const dotCoder: BytesCoder = {
   },
 };
 
+export const ksmCoder: BytesCoder = {
+  encode(data: Uint8Array):string{
+    const T_PREFIX = new Uint8Array([2]);
+    const body = concatBytes(T_PREFIX, data);
+    const hash = blake2b(concatBytes(PREFIX, body));
+    const complete = concatBytes(body, hash.slice(0, 2));
+    return base58.encode(complete);
+  },
+  decode(data: string): Uint8Array {
+    const bytes = base58.decode(data);
+    if (KNOWN_TYPES.indexOf(bytes[0]) === -1) {
+      throw new UnrecognizedAddressFormatError();
+    }
+    const payload = bytes.subarray(1, 33);
+    const hash = blake2b(concatBytes(PREFIX, bytes.subarray(0, 33)));
+    const checksum = hash.slice(0, 2);
+    const expectedChecksum = bytes.subarray(33, 35);
+    if (!equalBytes(checksum, expectedChecksum)) throw new UnrecognizedAddressFormatError();
+    return payload;
+  }
+}
+
 export function dotAddrEncoder(data: Uint8Array): string {
   const body = concatBytes(TYPE_0, data);
   const hash = blake2b(concatBytes(PREFIX, body));
