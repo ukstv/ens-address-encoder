@@ -907,28 +907,28 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "0x15813DAE07E373DC800690031A1385eB7faDe49F", hex: "15813dae07e373dc800690031a1385eb7fade49f" },
     ],
   },
-  // {
-  //   name: "HNT",
-  //   coinType: 904,
-  //   passingVectors: [
-  //     {
-  //       text: "13M8dUbxymE3xtiAXszRkGMmezMhBS8Li7wEsMojLdb4Sdxc4wc",
-  //       hex: "01351a71c22fefec2231936ad2826b217ece39d9f77fc6c49639926299c3869295",
-  //     },
-  //     {
-  //       text: "112qB3YaH5bZkCnKA5uRH7tBtGNv2Y5B4smv1jsmvGUzgKT71QpE",
-  //       hex: "00f11444921875e2ef7435513a1d1f1b0fa49e3242956a24383912ec5d4f194077",
-  //     },
-  //   ],
-  // },
-  // {
-  //   name: "RUNE",
-  //   coinType: 931,
-  //   passingVectors: [
-  //     { text: "thor1kljxxccrheghavaw97u78le6yy3sdj7h696nl4", hex: "b7e4636303be517eb3ae2fb9e3ff3a212306cbd7" },
-  //     { text: "thor1yv0mrrygnjs03zsrwrgqz4sa36evfw2a049l5p", hex: "231fb18c889ca0f88a0370d001561d8eb2c4b95d" },
-  //   ],
-  // },
+  {
+    name: "HNT",
+    coinType: 904,
+    passingVectors: [
+      {
+        text: "13M8dUbxymE3xtiAXszRkGMmezMhBS8Li7wEsMojLdb4Sdxc4wc",
+        hex: "01351a71c22fefec2231936ad2826b217ece39d9f77fc6c49639926299c3869295",
+      },
+      {
+        text: "112qB3YaH5bZkCnKA5uRH7tBtGNv2Y5B4smv1jsmvGUzgKT71QpE",
+        hex: "00f11444921875e2ef7435513a1d1f1b0fa49e3242956a24383912ec5d4f194077",
+      },
+    ],
+  },
+  {
+    name: "RUNE",
+    coinType: 931,
+    passingVectors: [
+      { text: "thor1kljxxccrheghavaw97u78le6yy3sdj7h696nl4", hex: "b7e4636303be517eb3ae2fb9e3ff3a212306cbd7" },
+      { text: "thor1yv0mrrygnjs03zsrwrgqz4sa36evfw2a049l5p", hex: "231fb18c889ca0f88a0370d001561d8eb2c4b95d" },
+    ],
+  },
   // {
   //   name: "BCD",
   //   coinType: 999,

@@ -32,6 +32,7 @@ import { dotCoder } from "./chains/dot.js";
 import { filCoder } from "./chains/fil.js";
 import { base64urlnopad } from "@scure/base";
 import { flowCoder } from "./chains/flow.js";
+import { bs58Decode, bs58Encode } from "crypto-addr-codec";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -150,7 +151,8 @@ export const FORMATS: Array<IFormat> = [
   c("CLO_LEGACY", 820, makeChecksummedHexCoder()),
   c("HIVE", 825, makeEosCoder("STM")),
   c("TOMO_LEGACY", 889, makeChecksummedHexCoder()),
-  //   getConfig('HNT', 904, hntAddresEncoder, hntAddressDecoder),
+  c("HNT", 904, utils.chain(bytePrefixEncoder(new Uint8Array([0])), BS58)),
+  c("RUNE", 931, makeBech32Coder("thor")),
   //   bech32Chain('RUNE', 931, 'thor'),
   //   bitcoinChain('BCD', 999, 'bcd', [[0x00]], [[0x05]]),
   //   hexChecksumChain('TT_LEGACY', 1001),
