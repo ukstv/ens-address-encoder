@@ -1,9 +1,15 @@
 import type { IFormat } from "./format.js";
 import { fromCoder } from "./format.js";
-import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
+import {
+  bitcoinBase58Chain,
+  BS58,
+  makeBech32Segwit,
+  makeBitcoinBase58Check,
+  makeBitcoinCoder,
+} from "./chains/bitcoin.js";
 import { hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
-import { base32, base58, base58xmr, hex, utf8, utils } from "@scure/base";
+import { base32, base58, base58xmr, base64url, hex, utf8, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
 import { icxCoder } from "./chains/icx.js";
 import { arkCoder } from "./chains/ark.js";
@@ -24,6 +30,7 @@ import { vsysCoder } from "./chains/vsys.js";
 import { nearCoder } from "./chains/near.js";
 import { dotCoder } from "./chains/dot.js";
 import { filCoder } from "./chains/fil.js";
+import { base64urlnopad } from "@scure/base";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -119,11 +126,11 @@ export const FORMATS: Array<IFormat> = [
   c("AE", 457, utils.chain(bytePrefixDecoder(Buffer.from("0x")), BS58, stringPrefixCoder("ak_"))),
   c("KAVA", 459, makeBech32Coder("kava")),
   c("FIL", 461, filCoder),
-  //   getConfig('AR', 472, arAddressEncoder, arAddressDecoder),
-  //   bitcoinBase58Chain('CCA', 489, [[0x0b]], [[0x05]]),
-  //   hexChecksumChain('THETA_LEGACY', 500),
-  //   getConfig('SOL', 501, bs58EncodeNoCheck, bs58DecodeNoCheck),
-  //   getConfig('XHV', 535, xmrAddressEncoder, xmrAddressDecoder),
+  c("AR", 472, base64urlnopad),
+  c("CCA", 489, makeBitcoinBase58Check(h("0B"), h("05"))),
+  c("THETA_LEGACY", 500, makeChecksummedHexCoder()),
+  c("SOL", 501, base58),
+  c('XHV', 535, base58xmr)
   //   getConfig('FLOW', 539, flowEncode, flowDecode),
   //   bech32Chain('IRIS', 566, 'iaa'),
   //   bitcoinBase58Chain('LRG', 568, [[0x1e]], [[0x0d]]),
