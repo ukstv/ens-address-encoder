@@ -1,7 +1,7 @@
 import { blake2b } from "@noble/hashes/blake2b";
 import { UnrecognizedAddressFormatError } from "../format.js";
 import { base32unpadded, equalBytes } from "./numbers-bytes.js";
-import { BytesCoder, Coder } from "@scure/base";
+import { BytesCoder, Coder, utils } from "@scure/base";
 import { concatBytes } from "@noble/hashes/utils";
 
 const NETWORKS = ["t", "f"];
@@ -69,7 +69,7 @@ function filDecode(address: string) {
   const raw = address.slice(2);
 
   if (protocol === 0) {
-    return filNewAddress(protocol, LEBCoder.encode(BigInt(raw)));
+    return new Address(concatBytes(protocolByte, LEBCoder.encode(BigInt(raw))));
   }
 
   const payloadChecksum = base32unpadded.decode(raw.toUpperCase());
@@ -80,7 +80,7 @@ function filDecode(address: string) {
     throw new UnrecognizedAddressFormatError();
   }
 
-  const addressObj = filNewAddress(protocol, payload);
+  const addressObj = new Address(concatBytes(protocolByte, payload));
   if (filEncode(network, addressObj) !== address) {
     throw Error(`Did not encode this address properly: ${address}`);
   }
@@ -114,15 +114,9 @@ function filEncode(network: string, address: Address) {
   return addressString;
 }
 
-function filNewAddress(protocol: number, payload: Uint8Array): Address {
-  const protocolByte = Uint8Array.from([protocol]);
-  const input = concatBytes(protocolByte, payload);
-  return new Address(input);
-}
-
 export const filCoder: BytesCoder = {
   encode(data: Uint8Array): string {
-    const address = filNewAddress(data[0], data.slice(1));
+    const address = new Address(data);
     return filEncode("f", address).toString();
   },
   decode(data: string): Uint8Array {
