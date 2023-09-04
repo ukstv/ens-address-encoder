@@ -844,13 +844,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "3CMNFxN1oHBc4R1EpboAL5yzHGgE611Xou", hex: "a91474f209f6ea907e2ea48f74fae05782ae8a66525787" },
     ],
   },
-  // {
-  //   name: "TFUEL",
-  //   coinType: 589,
-  //   passingVectors: [
-  //     { text: "0x3599CF49e80A01BCb879A19599C8a6cd8C8d9aa6", hex: "3599cf49e80a01bcb879a19599c8a6cd8c8d9aa6" },
-  //   ],
-  // },
+  {
+    name: "TFUEL",
+    coinType: 589,
+    passingVectors: [
+      { text: "0x3599CF49e80A01BCb879A19599C8a6cd8C8d9aa6", hex: "3599cf49e80a01bcb879a19599c8a6cd8c8d9aa6" },
+    ],
+  },
   // {
   //   name: "GRIN",
   //   coinType: 592,

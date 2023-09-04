@@ -141,7 +141,7 @@ export const FORMATS: Array<IFormat> = [
   c("SRM", 573, base58),
   c("VLX", 574, base58),
   c("BPS", 576, makeBitcoinBase58Check(h("00"), h("05"))),
-  //   hexChecksumChain('TFUEL', 589),
+  c("TFUEL", 589, makeChecksummedHexCoder()),
   //   bech32Chain('GRIN', 592, 'grin'),
   //   hexChecksumChain('GNO_LEGACY', 700),
   //   // VET uses same address format as Ethereum but it's not EVM chain and no chainId found on https://chainlist.org
