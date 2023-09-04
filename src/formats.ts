@@ -1,7 +1,7 @@
 import type { IFormat } from "./format.js";
 import { fromCoder, UnrecognizedAddressFormatError } from "./format.js";
 import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
-import { concatBytes, hexToBytes } from "@noble/hashes/utils";
+import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
 import { base32, base58, base58xmr, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
@@ -101,14 +101,12 @@ function algoEncode(data0: Uint8Array): string {
 const AlgoChecksumByteLength = 4;
 const AlgoAddressByteLength = 36;
 
-import { sha512_256 } from "js-sha512";
+import { sha512_256 } from "@noble/hashes/sha512";
 
 // Returns 4 last byte (8 chars) of sha512_256(publicKey)
 function algoChecksum(pk: Buffer): string {
-  return sha512_256
-    .update(pk)
-    .hex()
-    .substr(-AlgoChecksumByteLength * 2);
+  const checksum = sha512_256(pk).slice(-AlgoChecksumByteLength)
+  return bytesToHex(checksum)
 }
 
 function algoDecode(data: string): Buffer {
