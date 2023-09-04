@@ -102,7 +102,7 @@ export const FORMATS: Array<IFormat> = [
   c("DOT", 354, dotCoder),
   c("VSYS", 360, vsysCoder),
   c("ABBC", 367, makeEosCoder("ABBC")),
-  //   getConfig('NEAR', 397, encodeNearAddr, decodeNearAddr),
+  c("NEAR", 397, nearCoder),
   //   getConfig('ETN', 415, etnAddressEncoder, etnAddressDecoder),
   //   getConfig('AION', 425, aionEncoder, aionDecoder),
   //   getConfig('KSM', 434, ksmAddrEncoder, ksmAddrDecoder),
@@ -194,8 +194,29 @@ export const FORMATS: Array<IFormat> = [
   //   evmChain('AVAXC', 43114)
 ];
 
+function encodeNearAddr(data: Buffer): string {
+  const ndata = data.toString();
+  if (ndata.length > 64 || ndata.length < 2) {
+    throw Error("Invalid address format");
+  }
+  return ndata;
+}
+
+function decodeNearAddr(data: string): Buffer {
+  const regex = /(^(([a-z\d]+[\-_])*[a-z\d]+\.)*([a-z\d]+[\-_])*[a-z\d]+$)/g;
+  if (!regex.test(data)) {
+    throw Error("Invalid address string");
+  } else {
+    if (data.length > 64 || data.length < 2) {
+      throw Error("Invalid address format");
+    }
+    return Buffer.from(data);
+  }
+}
+
 import { blake2b } from "@noble/hashes/blake2b";
 import { vsysCoder } from "./chains/vsys";
+import { nearCoder } from "./chains/near";
 function isByteArrayValid(addressBytes: Uint8Array): boolean {
   // "M" for mainnet, "T" for test net. Just limited to mainnet
   if (addressBytes[0] !== 5 || addressBytes[1] !== "M".charCodeAt(0) || addressBytes.length !== 26) {
