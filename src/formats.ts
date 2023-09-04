@@ -32,7 +32,7 @@ import { dotCoder } from "./chains/dot.js";
 import { filCoder } from "./chains/fil.js";
 import { base64urlnopad } from "@scure/base";
 import { flowCoder } from "./chains/flow.js";
-import { bs58Decode, bs58Encode } from "crypto-addr-codec";
+import { tezosCoder } from "./chains/tezos.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -157,8 +157,9 @@ export const FORMATS: Array<IFormat> = [
   c("TT_LEGACY", 1001, makeChecksummedHexCoder()),
   c("FTM_LEGACY", 1007, makeChecksummedHexCoder()),
   c("ONE", 1023, makeBech32Coder("one")),
-  //   getConfig('ONT', 1024, ontAddrEncoder, ontAddrDecoder),
-  //   bech32Chain('NOSTR', 1237, 'npub'),
+  c("ONT", 1024, utils.chain(bytePrefixEncoder(new Uint8Array([0x17])), BS58)),
+  c("NOSTR", 1237, makeBech32Coder("npub")),
+  c("XTZ", 1729, tezosCoder),
   //   {
   //     coinType: 1729,
   //     decoder: tezosAddressDecoder,

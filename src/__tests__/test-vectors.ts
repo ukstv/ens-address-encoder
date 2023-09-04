@@ -958,41 +958,41 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "one103q7qe5t2505lypvltkqtddaef5tzfxwsse4z7", hex: "7c41e0668b551f4f902cfaec05b5bdca68b124ce" },
     ],
   },
-  // {
-  //   name: "ONT",
-  //   coinType: 1024,
-  //   passingVectors: [
-  //     { text: "ALvmTSEjNREwcRNJiLcTkxCnsXBfbZEUFK", hex: "3887346ea0b83129ff21f1ef3e6008a80373d1b3" },
-  //     { text: "AavjHwiNfkr7xKGHBpNEQYSL5QiKgRjZf1", hex: "d21728df85b2b457908bd33def8ff493d47f184a" },
-  //     { text: "AGmV3oHqzfAs3VFiqmn6cecxCXVNyg6tNh", hex: "0ae542fee226c044dc19b036db7cec939777596f" },
-  //   ],
-  // },
-  // {
-  //   name: "NOSTR",
-  //   coinType: 1237,
-  //   passingVectors: [
-  //     {
-  //       text: "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6",
-  //       hex: "3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d",
-  //     },
-  //     {
-  //       text: "npub10elfcs4fr0l0r8af98jlmgdh9c8tcxjvz9qkw038js35mp4dma8qzvjptg",
-  //       hex: "7e7e9c42a91bfef19fa929e5fda1b72e0ebc1a4c1141673e2794234d86addf4e",
-  //     },
-  //   ],
-  // },
-  // {
-  //   name: "XTZ",
-  //   coinType: 1729,
-  //   passingVectors: [
-  //     { text: "KT1BDEn6wobs7tDReKkGheXAhoq278TGaNn5", hex: "011cd5f135e80fd8ebb6e43335b24ca6116edeba6900" },
-  //     { text: "KT1BDEn6wobs7tDReKkGheXAhoq278TGaNn5", hex: "011cd5f135e80fd8ebb6e43335b24ca6116edeba6900" },
-  //
-  //     { text: "tz1XdRrrqrMfsFKA8iuw53xHzug9ipr6MuHq", hex: "000083846eddd5d3c5ed96e962506253958649c84a74" },
-  //     { text: "tz2Cfwk4ortcaqAGcVJKSxLiAdcFxXBLBoyY", hex: "00012fcb1d9307f0b1f94c048ff586c09f46614c7e90" },
-  //     { text: "tz3NdTPb3Ax2rVW2Kq9QEdzfYFkRwhrQRPhX", hex: "0002193b2b3f6b8f8e1e6b39b4d442fc2b432f6427a8" },
-  //   ],
-  // },
+  {
+    name: "ONT",
+    coinType: 1024,
+    passingVectors: [
+      { text: "ALvmTSEjNREwcRNJiLcTkxCnsXBfbZEUFK", hex: "3887346ea0b83129ff21f1ef3e6008a80373d1b3" },
+      { text: "AavjHwiNfkr7xKGHBpNEQYSL5QiKgRjZf1", hex: "d21728df85b2b457908bd33def8ff493d47f184a" },
+      { text: "AGmV3oHqzfAs3VFiqmn6cecxCXVNyg6tNh", hex: "0ae542fee226c044dc19b036db7cec939777596f" },
+    ],
+  },
+  {
+    name: "NOSTR",
+    coinType: 1237,
+    passingVectors: [
+      {
+        text: "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6",
+        hex: "3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d",
+      },
+      {
+        text: "npub10elfcs4fr0l0r8af98jlmgdh9c8tcxjvz9qkw038js35mp4dma8qzvjptg",
+        hex: "7e7e9c42a91bfef19fa929e5fda1b72e0ebc1a4c1141673e2794234d86addf4e",
+      },
+    ],
+  },
+  {
+    name: "XTZ",
+    coinType: 1729,
+    passingVectors: [
+      { text: "KT1BDEn6wobs7tDReKkGheXAhoq278TGaNn5", hex: "011cd5f135e80fd8ebb6e43335b24ca6116edeba6900" },
+      { text: "KT1BDEn6wobs7tDReKkGheXAhoq278TGaNn5", hex: "011cd5f135e80fd8ebb6e43335b24ca6116edeba6900" },
+
+      { text: "tz1XdRrrqrMfsFKA8iuw53xHzug9ipr6MuHq", hex: "000083846eddd5d3c5ed96e962506253958649c84a74" },
+      { text: "tz2Cfwk4ortcaqAGcVJKSxLiAdcFxXBLBoyY", hex: "00012fcb1d9307f0b1f94c048ff586c09f46614c7e90" },
+      { text: "tz3NdTPb3Ax2rVW2Kq9QEdzfYFkRwhrQRPhX", hex: "0002193b2b3f6b8f8e1e6b39b4d442fc2b432f6427a8" },
+    ],
+  },
   // {
   //   name: "ADA",
   //   coinType: 1815,
