@@ -117,7 +117,7 @@ export const FORMATS: Array<IFormat> = [
   c("AION", 425, utils.chain(hex, stringPrefixCoder("0x"))),
   c("KSM", 434, dotCoder(2)),
   c("AE", 457, utils.chain(bytePrefixDecoder(Buffer.from("0x")), BS58, stringPrefixCoder("ak_"))),
-  //   bech32Chain('KAVA', 459, 'kava'),
+  c("KAVA", 459, makeBech32Coder("kava")),
   //   getConfig('FIL', 461, filAddrEncoder, filAddrDecoder),
   //   getConfig('AR', 472, arAddressEncoder, arAddressDecoder),
   //   bitcoinBase58Chain('CCA', 489, [[0x0b]], [[0x05]]),

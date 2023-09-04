@@ -664,13 +664,13 @@ export const TEST_VECTORS: Array<TestVector> = [
       },
     ],
   },
-  // {
-  //   name: "KAVA",
-  //   coinType: 459,
-  //   passingVectors: [
-  //     { text: "kava1r4v2zdhdalfj2ydazallqvrus9fkphmglhn6u6", hex: "1d58a136edefd32511bd177ff0307c815360df68" },
-  //   ],
-  // },
+  {
+    name: "KAVA",
+    coinType: 459,
+    passingVectors: [
+      { text: "kava1r4v2zdhdalfj2ydazallqvrus9fkphmglhn6u6", hex: "1d58a136edefd32511bd177ff0307c815360df68" },
+    ],
+  },
   // {
   //   name: "FIL",
   //   coinType: 461,
