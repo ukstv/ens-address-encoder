@@ -1,5 +1,5 @@
 import type { IFormat } from "./format.js";
-import { BS58, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
+import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
 import { hexToBytes } from "@noble/hashes/utils";
 import { fromCoder } from "./format.js";
 import { makeGroestlCoder } from "./chains/groestl";
@@ -63,6 +63,7 @@ export const FORMATS: Array<IFormat> = [
   c("XRP", 144, xrpCodec),
   c("BCH", 145, bchCodec),
   c("XLM", 148, xlmCoder),
+  c("BTM", 153, makeBech32Segwit("bm")),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
