@@ -929,28 +929,28 @@ export const TEST_VECTORS: Array<TestVector> = [
       { text: "thor1yv0mrrygnjs03zsrwrgqz4sa36evfw2a049l5p", hex: "231fb18c889ca0f88a0370d001561d8eb2c4b95d" },
     ],
   },
-  // {
-  //   name: "BCD",
-  //   coinType: 999,
-  //   passingVectors: [
-  //     { text: "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i", hex: "76a91465a16059864a2fdbc7c99a4723a8395bc6f188eb88ac" },
-  //     { text: "3CMNFxN1oHBc4R1EpboAL5yzHGgE611Xou", hex: "a91474f209f6ea907e2ea48f74fae05782ae8a66525787" },
-  //   ],
-  // },
-  // {
-  //   name: "TT_LEGACY",
-  //   coinType: 1001,
-  //   passingVectors: [
-  //     { text: "0x1001EEc06f2aDff074fC2A9492e132c33d6bd54d", hex: "1001eec06f2adff074fc2a9492e132c33d6bd54d" },
-  //   ],
-  // },
-  // {
-  //   name: "FTM_LEGACY",
-  //   coinType: 1007,
-  //   passingVectors: [
-  //     { text: "0x314159265dD8dbb310642f98f50C066173C1259b", hex: "314159265dd8dbb310642f98f50c066173c1259b" },
-  //   ],
-  // },
+  {
+    name: "BCD",
+    coinType: 999,
+    passingVectors: [
+      { text: "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i", hex: "76a91465a16059864a2fdbc7c99a4723a8395bc6f188eb88ac" },
+      { text: "3CMNFxN1oHBc4R1EpboAL5yzHGgE611Xou", hex: "a91474f209f6ea907e2ea48f74fae05782ae8a66525787" },
+    ],
+  },
+  {
+    name: "TT_LEGACY",
+    coinType: 1001,
+    passingVectors: [
+      { text: "0x1001EEc06f2aDff074fC2A9492e132c33d6bd54d", hex: "1001eec06f2adff074fc2a9492e132c33d6bd54d" },
+    ],
+  },
+  {
+    name: "FTM_LEGACY",
+    coinType: 1007,
+    passingVectors: [
+      { text: "0x314159265dD8dbb310642f98f50C066173C1259b", hex: "314159265dd8dbb310642f98f50c066173c1259b" },
+    ],
+  },
   // {
   //   name: "ONE",
   //   coinType: 1023,
