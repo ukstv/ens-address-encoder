@@ -23,7 +23,7 @@ import { sha512_256 } from "@noble/hashes/sha512";
 import { vsysCoder } from "./chains/vsys.js";
 import { nearCoder } from "./chains/near.js";
 import { dotCoder } from "./chains/dot.js";
-import { filAddrDecoder, filAddrEncoder } from "./chains/fil.js";
+import { filCoder } from "./chains/fil.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -118,7 +118,7 @@ export const FORMATS: Array<IFormat> = [
   c("KSM", 434, dotCoder(2)),
   c("AE", 457, utils.chain(bytePrefixDecoder(Buffer.from("0x")), BS58, stringPrefixCoder("ak_"))),
   c("KAVA", 459, makeBech32Coder("kava")),
-    getConfig('FIL', 461, filAddrEncoder, filAddrDecoder),
+  c("FIL", 461, filCoder),
   //   getConfig('AR', 472, arAddressEncoder, arAddressDecoder),
   //   bitcoinBase58Chain('CCA', 489, [[0x0b]], [[0x05]]),
   //   hexChecksumChain('THETA_LEGACY', 500),

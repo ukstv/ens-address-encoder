@@ -2,55 +2,64 @@
 
 import { b32decode, b32encode, hex2a } from "crypto-addr-codec";
 import { blake2b } from "@noble/hashes/blake2b";
-import Bn from 'bn.js'
+import Bn from "bn.js";
+import { UnrecognizedAddressFormatError } from "../format";
+import { equalBytes } from "./numbers-bytes.js";
+import { BytesCoder } from "@scure/base";
 
-function validateChecksum(ingest: Buffer, expect: Buffer) {
+const NETWORKS = ["t", "f"];
+
+function isChecksumCorrect(ingest: Uint8Array, expect: Uint8Array): boolean {
   const digest = getChecksum(ingest);
-  return Buffer.compare(Buffer.from(digest), expect);
+  return equalBytes(digest, expect);
 }
 
-function getChecksum(ingest: Buffer): Uint8Array {
-  return blake2b(Uint8Array.from(ingest), { dkLen: 4 });
+function getChecksum(ingest: Uint8Array): Uint8Array {
+  return blake2b(ingest, { dkLen: 4 });
 }
 
 function checkAddressString(address: string) {
-  if (!address) {
-    throw Error("No bytes to validate.");
-  }
   if (address.length < 3) {
-    throw Error("Address is too short to validate.");
+    // Address is too short to validate
+    throw new UnrecognizedAddressFormatError();
   }
-  if (address[0] !== "f" && address[0] !== "t") {
-    throw Error("Unknown address network.");
+  if (!NETWORKS.includes(address[0])) {
+    // Unknown address network
+    throw new UnrecognizedAddressFormatError();
   }
 
   switch (address[1]) {
     case "0": {
       if (address.length > 22) {
-        throw Error("Invalid ID address length.");
+        // Invalid ID address length
+        throw new UnrecognizedAddressFormatError();
       }
       break;
     }
     case "1": {
       if (address.length !== 41) {
-        throw Error("Invalid secp256k1 address length.");
+        // Invalid secp256k1 address length
+        throw new UnrecognizedAddressFormatError();
       }
       break;
     }
     case "2": {
       if (address.length !== 41) {
-        throw Error("Invalid Actor address length.");
+        // Invalid Actor address length
+        throw new UnrecognizedAddressFormatError();
       }
       break;
     }
     case "3": {
       if (address.length !== 86) {
-        throw Error("Invalid BLS address length.");
+        // Invalid BLS address length
+        throw new UnrecognizedAddressFormatError();
       }
       break;
     }
     default: {
-      throw new Error("Invalid address protocol.");
+      // Invalid address protocol
+      throw new UnrecognizedAddressFormatError();
     }
   }
 }
@@ -59,7 +68,7 @@ function filDecode(address: string) {
   checkAddressString(address);
   const network = address[0];
   const protocol = parseInt(address[1], 10);
-  const protocolByte = Buffer.from([protocol]);
+  const protocolByte = Uint8Array.from([protocol]);
   const raw = address.slice(2);
 
   if (protocol === 0) {
@@ -70,8 +79,8 @@ function filDecode(address: string) {
   const { length } = payloadChecksum;
   const payload = payloadChecksum.slice(0, length - 4);
   const checksum = payloadChecksum.slice(length - 4, length);
-  if (validateChecksum(Buffer.concat([protocolByte, payload]), checksum)) {
-    throw Error("Checksums don't match");
+  if (!isChecksumCorrect(Buffer.concat([protocolByte, payload]), checksum)) {
+    throw new UnrecognizedAddressFormatError();
   }
 
   const addressObj = filNewAddress(protocol, payload);
@@ -110,19 +119,20 @@ function filEncode(network: string, address: Address) {
 }
 
 function filNewAddress(protocol: number, payload: Uint8Array): Address {
-  const protocolByte = Buffer.from([protocol]);
+  const protocolByte = Uint8Array.from([protocol]);
   const input = Buffer.concat([protocolByte, payload]);
   return new Address(input);
 }
 
-export function filAddrEncoder(data: Uint8Array): string {
-  const address = filNewAddress(data[0], data.slice(1));
-  return filEncode("f", address).toString();
-}
-
-export function filAddrDecoder(data: string): Buffer {
-  return filDecode(data).str;
-}
+export const filCoder: BytesCoder = {
+  encode(data: Uint8Array): string {
+    const address = filNewAddress(data[0], data.slice(1));
+    return filEncode("f", address).toString();
+  },
+  decode(data: string): Uint8Array {
+    return filDecode(data).str;
+  },
+};
 
 class Address {
   public str: Buffer;
@@ -149,8 +159,6 @@ class Address {
     return this.str.slice(1, this.str.length);
   }
 }
-
-
 
 class Stream {
   public buffer: Buffer;
