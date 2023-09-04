@@ -46,16 +46,3 @@ export function bytePrefixCoder(prefix: Uint8Array): Coder<Uint8Array, Uint8Arra
     },
   };
 }
-
-export function stringPrefixCodec(prefix: string): Coder<string, string> {
-  return {
-    encode(from: string): string {
-      return `${prefix}${from}`;
-    },
-    decode(to: string): string {
-      const actualPrefix = to.substring(0, prefix.length);
-      if (actualPrefix !== prefix) throw new UnrecognizedAddressFormatError();
-      return to.substring(prefix.length);
-    },
-  };
-}

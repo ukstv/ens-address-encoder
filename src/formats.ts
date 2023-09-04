@@ -17,8 +17,7 @@ import { bchCodec } from "./chains/bch.js";
 import { xlmCoder } from "./chains/xlm.js";
 import { nanoCoder } from "./chains/nano.js";
 import { keccak_256 } from "@noble/hashes/sha3";
-import { bs58Decode, bs58Encode } from "crypto-addr-codec";
-import { bytePrefixCoder, stringPrefixCodec } from "./chains/numbers-bytes";
+import { bytePrefixCoder } from "./chains/numbers-bytes.js";
 import { nimCoder } from "./chains/nim.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
