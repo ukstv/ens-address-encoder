@@ -73,7 +73,7 @@ function filDecode(address: string) {
   }
 
   const payloadChecksum = base32unpadded.decode(raw.toUpperCase());
-  const { length } = payloadChecksum;
+  const length = payloadChecksum.length;
   const payload = payloadChecksum.slice(0, length - 4);
   const checksum = payloadChecksum.slice(length - 4, length);
   if (!isChecksumCorrect(concatBytes(protocolByte, payload), checksum)) {
