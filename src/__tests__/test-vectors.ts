@@ -461,16 +461,16 @@ export const TEST_VECTORS: Array<TestVector> = [
       },
     ],
   },
-  // {
-  //   name: "FIO",
-  //   coinType: 235,
-  //   passingVectors: [
-  //     {
-  //       text: "FIO7tkpmicyK2YWShSKef6B9XXqBN6LpDJo69oRDfhn67CEnj3L2G",
-  //       hex: "038bb1a68d19eb9139734d0f38da55cfcea955ed8f0baf42f12502e244293c08eb",
-  //     },
-  //   ],
-  // },
+  {
+    name: "FIO",
+    coinType: 235,
+    passingVectors: [
+      {
+        text: "FIO7tkpmicyK2YWShSKef6B9XXqBN6LpDJo69oRDfhn67CEnj3L2G",
+        hex: "038bb1a68d19eb9139734d0f38da55cfcea955ed8f0baf42f12502e244293c08eb",
+      },
+    ],
+  },
   // {
   //   name: "BSV",
   //   coinType: 236,

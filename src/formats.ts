@@ -74,6 +74,7 @@ export const FORMATS: Array<IFormat> = [
   c("EOS", 194, makeEosCoder("EOS")),
   c("TRX", 195, BS58),
   c("BCN", 204, utils.chain(utils.checksum(4, keccak_256), base58xmr)),
+  c('FIO', 235, makeEosCoder('FIO'))
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
