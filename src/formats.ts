@@ -67,6 +67,8 @@ export const FORMATS: Array<IFormat> = [
   c("BTM", 153, makeBech32Segwit("bm")),
   c("BTG", 156, makeBitcoinCoder("btg", h("26"), h("17"))),
   c("NANO", 165, nanoCoder),
+  c('RVN', 175, makeBitcoinBase58Check(h('3C'), h('7A'))),
+  c('POA_LEGACY', 178, makeChecksummedHexCoder())
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
