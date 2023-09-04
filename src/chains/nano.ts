@@ -1,23 +1,31 @@
-import { blake2b as B2 } from "@noble/hashes/blake2b";
+import { blake2b } from "@noble/hashes/blake2b";
 import { utils, BytesCoder, Coder } from "@scure/base";
 
 const NANO_ALPHABET = "13456789abcdefghijkmnopqrstuwxyz";
 const nanoRadix: Coder<Uint8Array, number[]> = {
   encode: (bytes) => nanoRadixConvert(bytes, 8, 5),
-  decode: (digits) => Uint8Array.from(nanoRadixConvert(digits, 5, 8)),
+  decode: (digits) => {
+    const length = digits.length;
+    const leftover = (length * 5) % 8;
+    let result = nanoRadixConvert(digits, 5, 8);
+    if (leftover !== 0) {
+      result = result.slice(1);
+    }
+    return Uint8Array.from(result);
+  },
 };
-const NANO_BASE_32 = utils.chain(nanoRadix, utils.alphabet("13456789abcdefghijkmnopqrstuwxyz"), utils.join(""));
+
+const NANO_BASE_32 = utils.chain(nanoRadix, utils.alphabet(NANO_ALPHABET), utils.join(""));
 
 export const nanoCoder: BytesCoder = {
   encode(data: Uint8Array): string {
     const encoded = NANO_BASE_32.encode(data);
-    const checksum = B2(data, { dkLen: 5 }).reverse();
+    const checksum = blake2b(data, { dkLen: 5 }).reverse();
     const checksumEncoded = NANO_BASE_32.encode(checksum);
     return `nano_${encoded}${checksumEncoded}`;
   },
   decode(data: string): Uint8Array {
-    const decoded = decode(data.substring(5));
-
+    const decoded = NANO_BASE_32.decode(data.substring(5));
     return decoded.subarray(0, -5);
   },
 };
@@ -45,80 +53,4 @@ function nanoRadixConvert(data: ArrayLike<number>, from: number, to: number) {
   carry = (carry << (to - (pos + offset))) & mask;
   if (pos > 0) res.push(carry >>> 0);
   return res;
-}
-
-/**
- * Encode provided Uint8Array using the Nano-specific Base-32 implementeation.
- * @param {Uint8Array} data Input buffer formatted as a Uint8Array
- * @returns {string}
- */
-function encode(data: Uint8Array): string {
-  const length = data.length;
-  const leftover = (length * 8) % 5;
-  const offset = leftover === 0 ? 0 : 5 - leftover;
-
-  let carry = 0;
-  let pos = 0;
-  let output = "";
-
-  for (const n of data) {
-    carry = (carry << 8) | n;
-    pos += 8;
-
-    while (pos >= 5) {
-      output += NANO_ALPHABET[(carry >>> (pos + offset - 5)) & 31];
-      pos -= 5;
-    }
-  }
-
-  if (pos > 0) {
-    output += NANO_ALPHABET[(carry << (5 - (pos + offset))) & 31];
-  }
-
-  return output;
-}
-
-function readChar(char: string): number {
-  var idx = NANO_ALPHABET.indexOf(char);
-
-  if (idx === -1) {
-    throw new Error("Invalid character found: " + char);
-  }
-
-  return idx;
-}
-
-/**
- * Decodes a Nano-implementation Base32 encoded string into a Uint8Array
- * @param {string} input A Nano-Base32 encoded string
- * @returns {Uint8Array}
- */
-function decode(input: string): Uint8Array {
-  var length = input.length;
-  const leftover = (length * 5) % 8;
-  const offset = leftover === 0 ? 0 : 8 - leftover;
-
-  var bits = 0;
-  var value = 0;
-
-  var index = 0;
-  var output = new Uint8Array(Math.ceil((length * 5) / 8));
-
-  for (var i = 0; i < length; i++) {
-    value = (value << 5) | readChar(input[i]);
-    bits += 5;
-
-    if (bits >= 8) {
-      output[index++] = (value >>> (bits + offset - 8)) & 255;
-      bits -= 8;
-    }
-  }
-  if (bits > 0) {
-    output[index++] = (value << (bits + offset - 8)) & 255;
-  }
-
-  if (leftover !== 0) {
-    output = output.slice(1);
-  }
-  return output;
 }
