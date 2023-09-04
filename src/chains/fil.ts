@@ -61,7 +61,7 @@ function checkAddressString(address: string) {
   }
 }
 
-function filDecode(address: string) {
+function filDecode(address: string): Uint8Array {
   checkAddressString(address);
   const network = address[0];
   const protocol = parseInt(address[1], 10);
@@ -69,7 +69,7 @@ function filDecode(address: string) {
   const raw = address.slice(2);
 
   if (protocol === 0) {
-    return new Address(concatBytes(protocolByte, LEBCoder.encode(BigInt(raw))));
+    return concatBytes(protocolByte, LEBCoder.encode(BigInt(raw)));
   }
 
   const payloadChecksum = base32unpadded.decode(raw.toUpperCase());
@@ -84,7 +84,7 @@ function filDecode(address: string) {
   if (filEncode(network, addressObj) !== address) {
     throw Error(`Did not encode this address properly: ${address}`);
   }
-  return addressObj;
+  return concatBytes(protocolByte, payload);
 }
 
 function filEncode(network: string, address: Address) {
@@ -120,7 +120,7 @@ export const filCoder: BytesCoder = {
     return filEncode("f", address).toString();
   },
   decode(data: string): Uint8Array {
-    return filDecode(data).str;
+    return filDecode(data);
   },
 };
 
