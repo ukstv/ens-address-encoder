@@ -12,6 +12,7 @@ import bigInt from "big-integer";
 import bs58check from "bs58check";
 import { convertBits } from "./convertBits.js";
 import { validate, ValidationError } from "./validation.js";
+import { UnrecognizedAddressFormatError } from "../../format";
 
 /**
  * Encoding and decoding of the new Cash Address format for eCash. <br />
@@ -57,9 +58,9 @@ function encode(prefix: string, type: string, hash: string | Uint8Array): string
  * @returns {object}
  * @throws {ValidationError}
  */
-function decode(address: string, chronikReady = false): { prefix?: string; type?: string; hash: string | Uint8Array } {
-  validate(typeof address === "string" && hasSingleCase(address), "Invalid address: " + address + ".");
-  var pieces = address.toLowerCase().split(":");
+function decode(address: string): { prefix?: string; type?: string; hash: string | Uint8Array } {
+  if (!hasSingleCase(address)) throw new UnrecognizedAddressFormatError();
+  const pieces = address.toLowerCase().split(":");
   // if there is no prefix, it might still be valid
   let prefix, payload;
   if (pieces.length === 1) {
@@ -88,7 +89,7 @@ function decode(address: string, chronikReady = false): { prefix?: string; type?
     validate(validChecksum(prefix, payload), "Invalid checksum: " + address + ".");
   }
 
-  if (!payload) throw new Error(`Something went wrong`)
+  if (!payload) throw new Error(`Something went wrong`);
   var payloadData = fromUint5Array(payload.subarray(0, -8));
   var versionByte = payloadData[0];
   var hash = payloadData.subarray(1);
@@ -96,8 +97,8 @@ function decode(address: string, chronikReady = false): { prefix?: string; type?
   var type = getType(versionByte);
   return {
     prefix: prefix,
-    type: chronikReady ? type.toLowerCase() : type,
-    hash: chronikReady ? uint8arraytoString(hash) : hash,
+    type: type,
+    hash: hash,
   };
 }
 
@@ -464,7 +465,7 @@ function getTypeAndHashFromOutputScript(outputScript: string) {
  * @returns {string}
  * @throws {ValidationError}
  */
-function encodeOutputScript(outputScript: string, prefix = "ecash"):string {
+function encodeOutputScript(outputScript: string, prefix = "ecash"): string {
   // Get type and hash from outputScript
   const { type, hash } = getTypeAndHashFromOutputScript(outputScript);
 
