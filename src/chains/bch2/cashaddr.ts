@@ -166,19 +166,11 @@ function prefixToUint5Array(prefix: string): Uint8Array {
   return result;
 }
 
-/**
- * Returns an array representation of the given checksum to be encoded
- * within the address' payload.
- *
- * @private
- * @param {BigInteger} checksum Computed checksum.
- * @returns {Uint8Array}
- */
-function checksumToUint5Array(checksum: bigInt.BigInteger): Uint8Array {
-  var result = new Uint8Array(8);
-  for (var i = 0; i < 8; ++i) {
-    result[7 - i] = checksum.and(31).toJSNumber();
-    checksum = checksum.shiftRight(5);
+function checksumToUint5Array(checksum: bigint): Uint8Array {
+  const result = new Uint8Array(8);
+  for (let i = 0; i < 8; ++i) {
+    result[7 - i] = Number(checksum & 31n);
+    checksum = checksum >> 5n;
   }
   return result;
 }
@@ -260,7 +252,7 @@ function toUint5Array(data: Uint8Array): Uint8Array {
   return convertBits(data, 8, 5);
 }
 
-function polymod(data: ArrayLike<number>): bigInt.BigInteger {
+function polymod(data: ArrayLike<number>): bigint {
   const GENERATOR = [0x98f2bc8e61n, 0x79b76d99e2n, 0xf33e5fb3c4n, 0xae2eabe2a8n, 0x1e4f43e470n];
   let checksum = 1n;
   for (var i = 0; i < data.length; ++i) {
@@ -273,7 +265,7 @@ function polymod(data: ArrayLike<number>): bigInt.BigInteger {
       }
     }
   }
-  return bigInt(checksum ^ 1n);
+  return checksum ^ 1n;
 }
 
 /**
@@ -288,7 +280,7 @@ function polymod(data: ArrayLike<number>): bigInt.BigInteger {
 function validChecksum(prefix: string, payload: Uint8Array): boolean {
   var prefixData = concatBytes(prefixToUint5Array(prefix), new Uint8Array(1));
   var checksumData = concatBytes(prefixData, payload);
-  return polymod(checksumData).equals(0);
+  return polymod(checksumData) === 0n;
 }
 
 /**
