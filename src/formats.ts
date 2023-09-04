@@ -1,5 +1,5 @@
 import type { IFormat } from "./format.js";
-import { fromCoder } from "./format.js";
+import { fromCoder, UnrecognizedAddressFormatError } from "./format.js";
 import {
   bitcoinBase58Chain,
   BS58,
@@ -9,7 +9,7 @@ import {
 } from "./chains/bitcoin.js";
 import { hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
-import { base32, base58, base58xmr, base64url, hex, utf8, utils } from "@scure/base";
+import { base32, base58, base58xmr, base64url, bech32, hex, utf8, utils } from "@scure/base";
 import { makeChecksummedHexCoder } from "./chains/eth.js";
 import { icxCoder } from "./chains/icx.js";
 import { arkCoder } from "./chains/ark.js";
@@ -33,6 +33,7 @@ import { filCoder } from "./chains/fil.js";
 import { base64urlnopad } from "@scure/base";
 import { flowCoder } from "./chains/flow.js";
 import { tezosCoder } from "./chains/tezos.js";
+import { hnsCoder } from "./chains/hns";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -160,12 +161,6 @@ export const FORMATS: Array<IFormat> = [
   c("ONT", 1024, utils.chain(bytePrefixEncoder(new Uint8Array([0x17])), BS58)),
   c("NOSTR", 1237, makeBech32Coder("npub")),
   c("XTZ", 1729, tezosCoder),
-  //   {
-  //     coinType: 1729,
-  //     decoder: tezosAddressDecoder,
-  //     encoder: tezosAddressEncoder,
-  //     name: 'XTZ',
-  //   },
   //   cardanoChain('ADA', 1815, 'addr'),
   //   getConfig('SC', 1991, siaAddressEncoder, siaAddressDecoder),
   //   getConfig('QTUM', 2301, bs58Encode, bs58Decode),
@@ -179,22 +174,22 @@ export const FORMATS: Array<IFormat> = [
   //     name: 'HBAR',
   //   },
   //   iotaBech32Chain('IOTA', 4218, 'iota'),
-  //   getConfig('HNS', 5353, hnsAddressEncoder, hnsAddressDecoder),
-  //   getConfig('STX', 5757, c32checkEncode, c32checkDecode),
+  c("HNS", 5353, hnsCoder),
+  //   getConfig('STX', 5757, c32checkEncode, c32checkDecode), TODO
   //   hexChecksumChain('GO_LEGACY', 6060),
   //   bech32mChain('XCH', 8444, 'xch', 90),
   //   getConfig('NULS', 8964, nulsAddressEncoder, nulsAddressDecoder),
-  //   getConfig('AVAX', 9000, makeBech32Encoder('avax'), makeAvaxDecoder('avax')),
-  //   getConfig('STRK', 9004, starkAddressEncoder, starkAddressDecoder),
+  //   getConfig('AVAX', 9000, makeBech32Encoder('avax'), makeAvaxDecoder('avax')), TODO
+  //   getConfig('STRK', 9004, starkAddressEncoder, starkAddressDecoder), TODO
   //   hexChecksumChain('NRG_LEGACY', 9797),
   //   getConfig('ARDR', 16754, ardrAddressEncoder, ardrAddressDecoder),
   //   zcashChain('ZEL', 19167, 'za', [[0x1c, 0xb8]], [[0x1c, 0xbd]]),
-  //   hexChecksumChain('CELO_LEGACY', 52752),
-  //   bitcoinBase58Chain('WICC', 99999, [[0x49]], [[0x33]]),
+  //   hexChecksumChain('CELO_LEGACY', 52752), TODO
+  //   bitcoinBase58Chain('WICC', 99999, [[0x49]], [[0x33]]), TODO
   //   getConfig('WAN', 5718350, wanChecksummedHexEncoder, wanChecksummedHexDecoder),
   //   getConfig('WAVES', 5741564, bs58EncodeNoCheck, wavesAddressDecoder),
   //   // EVM chainIds
-  //   evmChain('OP', 10),
+  //   evmChain('OP', 10), TODO
   //   evmChain('CRO', 25),
   //   evmChain('BSC', 56),
   //   evmChain('GO', 60),
