@@ -64,6 +64,7 @@ export const FORMATS: Array<IFormat> = [
   c("BCH", 145, bchCodec),
   c("XLM", 148, xlmCoder),
   c("BTM", 153, makeBech32Segwit("bm")),
+  c("BTG", 156, makeBitcoinCoder("btg", h("26"), h("17"))),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
