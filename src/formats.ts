@@ -91,6 +91,12 @@ export const FORMATS: Array<IFormat> = [
     ),
   ),
   c("IOST", 291, base58),
+  c("DIVI", 301, makeBitcoinBase58Check(h("1E"), h("0D"))),
+  c("IOTX", 304, makeBech32Coder("io")),
+  c("BTS", 308, makeEosCoder("BTS")),
+  c("CKB", 309, makeBech32Coder("ckb")),
+  c("MRX", 326, BS58),
+  //   getConfig('MRX', 326, bs58Encode, bs58Decode),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(

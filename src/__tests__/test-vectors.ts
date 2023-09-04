@@ -522,43 +522,43 @@ export const TEST_VECTORS: Array<TestVector> = [
       },
     ],
   },
-  // {
-  //   name: "DIVI",
-  //   coinType: 301,
-  //   passingVectors: [
-  //     { text: "D8gBQyHPm7A673utQQwBaQcX2Kz91wJovR", hex: "76a91426c95750c1afe443b3351ea5923d5bae09c2a74b88ac" },
-  //     { text: "DSQvV5yKP5m2tR6uShpt8zmeM8UavPhwfH", hex: "76a914e958e753703fa13eb63b39a92d1f17f06abead5e88ac" },
-  //   ],
-  // },
-  // {
-  //   name: "IOTX",
-  //   coinType: 304,
-  //   passingVectors: [
-  //     { text: "io1nyjs526mnqcsx4twa7nptkg08eclsw5c2dywp4", hex: "99250a2b5b983103556eefa615d90f3e71f83a98" },
-  //   ],
-  // },
-  // {
-  //   name: "BTS",
-  //   coinType: 308,
-  //   passingVectors: [
-  //     {
-  //       text: "BTS8QykigLRi9ZUcNy1iXGY3KjRuCiLM8Ga49LHti1F8hgawKFc3K",
-  //       hex: "03d0519ddad62bd2a833bee5dc04011c08f77f66338c38d99c685dee1f454cd1b8",
-  //     },
-  //   ],
-  // },
-  // {
-  //   name: "CKB",
-  //   coinType: 309,
-  //   passingVectors: [
-  //     { text: "ckb1qyqt8xaupvm8837nv3gtc9x0ekkj64vud3jqfwyw5v", hex: "0100b39bbc0b3673c7d36450bc14cfcdad2d559c6c64" },
-  //   ],
-  // },
-  // {
-  //   name: "MRX",
-  //   coinType: 326,
-  //   passingVectors: [{ text: "MPYAKTYDaEMEXWFSxHeMtpXNNiSjK4TVch", hex: "32ab8959869ee2579028abdf6a199b049bfae6dc3b" }],
-  // },
+  {
+    name: "DIVI",
+    coinType: 301,
+    passingVectors: [
+      { text: "D8gBQyHPm7A673utQQwBaQcX2Kz91wJovR", hex: "76a91426c95750c1afe443b3351ea5923d5bae09c2a74b88ac" },
+      { text: "DSQvV5yKP5m2tR6uShpt8zmeM8UavPhwfH", hex: "76a914e958e753703fa13eb63b39a92d1f17f06abead5e88ac" },
+    ],
+  },
+  {
+    name: "IOTX",
+    coinType: 304,
+    passingVectors: [
+      { text: "io1nyjs526mnqcsx4twa7nptkg08eclsw5c2dywp4", hex: "99250a2b5b983103556eefa615d90f3e71f83a98" },
+    ],
+  },
+  {
+    name: "BTS",
+    coinType: 308,
+    passingVectors: [
+      {
+        text: "BTS8QykigLRi9ZUcNy1iXGY3KjRuCiLM8Ga49LHti1F8hgawKFc3K",
+        hex: "03d0519ddad62bd2a833bee5dc04011c08f77f66338c38d99c685dee1f454cd1b8",
+      },
+    ],
+  },
+  {
+    name: "CKB",
+    coinType: 309,
+    passingVectors: [
+      { text: "ckb1qyqt8xaupvm8837nv3gtc9x0ekkj64vud3jqfwyw5v", hex: "0100b39bbc0b3673c7d36450bc14cfcdad2d559c6c64" },
+    ],
+  },
+  {
+    name: "MRX",
+    coinType: 326,
+    passingVectors: [{ text: "MPYAKTYDaEMEXWFSxHeMtpXNNiSjK4TVch", hex: "32ab8959869ee2579028abdf6a199b049bfae6dc3b" }],
+  },
   // {
   //   name: "LUNA",
   //   coinType: 330,
