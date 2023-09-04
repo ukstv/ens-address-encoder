@@ -23,6 +23,9 @@ dependencies:
   blakejs:
     specifier: ^1.2.1
     version: 1.2.1
+  bn.js:
+    specifier: ^5.2.1
+    version: 5.2.1
   bs58:
     specifier: ^5.0.0
     version: 5.0.0
@@ -134,6 +137,10 @@ packages:
 
   /blakejs@1.2.1:
     resolution: {integrity: sha512-QXUSXI3QVc/gJME0dBpXrag1kbzOqCjCX8/b54ntNyW6sjtoqxqRk3LTmXzaJoh71zMsDCjM+47jS7XiwN/+fQ==}
+    dev: false
+
+  /bn.js@5.2.1:
+    resolution: {integrity: sha512-eXRvHzWyYPBuB4NBy0cmYQjGitUrtqwbvlzP3G6VFnNRbsZQIxQ10PbKKHt8gZ/HW/D/747aDl+QkDqg3KQLMQ==}
     dev: false
 
   /bs58@4.0.1:
