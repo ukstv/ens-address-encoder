@@ -2,19 +2,20 @@
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { equalBytes } from "./numbers-bytes";
+import { UnrecognizedAddressFormatError } from "../format";
 export const C32_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const hex = "0123456789abcdef";
 
 function c32checksum(data: Uint8Array): Uint8Array {
-  const dataHash = sha256(sha256(data));
-  return dataHash.slice(0, 4);
+  return sha256(sha256(data)).slice(0, 4);
 }
 
-export function c32checkEncode(data: Buffer): string {
-  const dataHex = data.toString("hex");
+export function c32checkEncode(data: Uint8Array): string {
+  const dataHex = bytesToHex(data);
   let hash160hex = dataHex.substring(0, dataHex.length - 8);
-  if (!hash160hex.match(/^[0-9a-fA-F]{40}$/)) {
-    throw new Error("Invalid argument: not a hash160 hex string");
+  const hash160 = data.subarray(0, data.length - 4);
+  if (hash160.length !== 20) {
+    throw new UnrecognizedAddressFormatError();
   }
 
   hash160hex = hash160hex.toLowerCase();
@@ -24,20 +25,21 @@ export function c32checkEncode(data: Buffer): string {
 
   // p2pkh: 'P'
   // p2sh: 'M'
-  const version = { p2pkh: 22, p2sh: 20 };
+  const version = {
+    p2pkh: new Uint8Array([22]),
+    p2sh: new Uint8Array([20]),
+  };
 
   const checksumHex = dataHex.slice(-8);
-  const checksum = hexToBytes(checksumHex);
+  const checksum = data.subarray(-4);
   let c32str = "";
   let prefix = "";
 
-  const a = concatBytes(hexToBytes(version.p2pkh.toString(16)), hexToBytes(hash160hex));
-  if (equalBytes(c32checksum(a), checksum)) {
+  if (equalBytes(c32checksum(concatBytes(version.p2pkh, hash160)), checksum)) {
     prefix = "P";
     c32str = c32encode(`${hash160hex}${checksumHex}`);
   }
-  const b = concatBytes(hexToBytes(version.p2sh.toString(16)), hexToBytes(hash160hex));
-  if (equalBytes(checksum, c32checksum(b))) {
+  if (equalBytes(checksum, c32checksum(concatBytes(version.p2sh, hash160)))) {
     prefix = "M";
     c32str = c32encode(`${hash160hex}${checksumHex}`);
   }
