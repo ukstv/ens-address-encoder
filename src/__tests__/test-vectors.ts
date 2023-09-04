@@ -512,16 +512,16 @@ export const TEST_VECTORS: Array<TestVector> = [
       },
     ],
   },
-  // {
-  //   name: "IOST",
-  //   coinType: 291,
-  //   passingVectors: [
-  //     {
-  //       text: "BkHuWzs6x2wUcuDwcodwQSaWUfZHiN7SfF3vBKy1U2Qg",
-  //       hex: "9fabf5897177aabbd3c3d6052b351fe6c6c36d603dba257eb5bad3a17930ca39",
-  //     },
-  //   ],
-  // },
+  {
+    name: "IOST",
+    coinType: 291,
+    passingVectors: [
+      {
+        text: "BkHuWzs6x2wUcuDwcodwQSaWUfZHiN7SfF3vBKy1U2Qg",
+        hex: "9fabf5897177aabbd3c3d6052b351fe6c6c36d603dba257eb5bad3a17930ca39",
+      },
+    ],
+  },
   // {
   //   name: "DIVI",
   //   coinType: 301,

@@ -90,6 +90,7 @@ export const FORMATS: Array<IFormat> = [
       base32unpadded,
     ),
   ),
+  c("IOST", 291, base58),
 ];
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
