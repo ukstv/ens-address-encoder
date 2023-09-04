@@ -5,12 +5,7 @@ import { equalBytes } from "./numbers-bytes";
 export const C32_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const hex = "0123456789abcdef";
 
-function c32checksum(dataHex: string): string {
-  const dataHash = sha256(sha256(hexToBytes(dataHex)));
-  return bytesToHex(dataHash.slice(0, 4));
-}
-
-function c32checksumA(data: Uint8Array): Uint8Array {
+function c32checksum(data: Uint8Array): Uint8Array {
   const dataHash = sha256(sha256(data));
   return dataHash.slice(0, 4);
 }
@@ -37,12 +32,12 @@ export function c32checkEncode(data: Buffer): string {
   let prefix = "";
 
   const a = concatBytes(hexToBytes(version.p2pkh.toString(16)), hexToBytes(hash160hex));
-  if (equalBytes(c32checksumA(a), checksum)) {
+  if (equalBytes(c32checksum(a), checksum)) {
     prefix = "P";
     c32str = c32encode(`${hash160hex}${checksumHex}`);
   }
   const b = concatBytes(hexToBytes(version.p2sh.toString(16)), hexToBytes(hash160hex));
-  if (equalBytes(checksum, c32checksumA(b))) {
+  if (equalBytes(checksum, c32checksum(b))) {
     prefix = "M";
     c32str = c32encode(`${hash160hex}${checksumHex}`);
   }
@@ -134,9 +129,10 @@ export function c32checkDecode(data: string): Buffer {
 
   const dataHex = c32decode(c32data.slice(1));
   const checksumHex = dataHex.slice(-8);
+  const checksum = hexToBytes(checksumHex);
 
-
-  if (c32checksum(`${versionHex}${dataHex.substring(0, dataHex.length - 8)}`) !== checksumHex) {
+  const a = c32checksum(concatBytes(hexToBytes(versionHex), hexToBytes(dataHex.substring(0, dataHex.length - 8))));
+  if (!equalBytes(checksum, a)) {
     throw new Error("Invalid c32check string: checksum mismatch");
   }
 
