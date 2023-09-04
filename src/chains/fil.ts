@@ -1,10 +1,7 @@
-// Ported from https://www.npmjs.com/package/@glif/filecoin-address to reduce file size
-
 import { blake2b } from "@noble/hashes/blake2b";
-import Bn from "bn.js";
 import { UnrecognizedAddressFormatError } from "../format.js";
 import { base32unpadded, equalBytes } from "./numbers-bytes.js";
-import { BytesCoder } from "@scure/base";
+import { BytesCoder, Coder } from "@scure/base";
 import { concatBytes } from "@noble/hashes/utils";
 
 const NETWORKS = ["t", "f"];
@@ -72,7 +69,7 @@ function filDecode(address: string) {
   const raw = address.slice(2);
 
   if (protocol === 0) {
-    return filNewAddress(protocol, lebEncode(BigInt(raw)));
+    return filNewAddress(protocol, LEBCoder.encode(BigInt(raw)));
   }
 
   const payloadChecksum = base32unpadded.decode(raw.toUpperCase());
@@ -100,8 +97,8 @@ function filEncode(network: string, address: Address) {
 
   switch (protocol) {
     case 0: {
-      const decoded = lebDecode(payload);
-      addressString = network + String(protocol) + decoded;
+      const decoded = LEBCoder.decode(payload);
+      addressString = network + String(protocol) + String(decoded);
       break;
     }
     default: {
@@ -159,82 +156,31 @@ class Address {
   }
 }
 
-class Stream {
-  public buffer: Uint8Array;
-  private bytesRead: number;
-
-  constructor(buf: Uint8Array = Uint8Array.from([])) {
-    this.buffer = buf;
-    this.bytesRead = 0;
-  }
-
-  public read(size: number) {
-    const data = this.buffer.slice(0, size);
-    this.buffer = this.buffer.slice(size);
-    this.bytesRead += size;
-    return data;
-  }
-
-  public write(buf: [any]) {
-    this.buffer = concatBytes(this.buffer, Uint8Array.from(buf));
-  }
-}
-
-// https://gitlab.com/mjbecze/leb128/-/blob/master/unsigned.js
-function read(stream: Stream) {
-  return readBn(stream).toString();
-}
-
-function readBn(stream: Stream) {
-  const num = new Bn(0);
-  let shift = 0;
-  let byt;
-  while (true) {
-    byt = stream.read(1)[0];
-    /* tslint:disable:no-bitwise */
-    num.ior(new Bn(byt & 0x7f).shln(shift));
-    if (byt >> 7 === 0) {
-      break;
-    } else {
-      shift += 7;
+// LEB128
+const LEBCoder: Coder<bigint, Uint8Array> = {
+  encode(value: bigint): Uint8Array {
+    const bytes: number[] = [];
+    do {
+      let byte = Number(value & 127n); // low-order 7 bits of value
+      value >>= 7n;
+      if (value != 0n) {
+        //   set high-order bit of byte;
+        byte = byte | 128;
+      }
+      bytes.push(byte);
+    } while (value != 0n);
+    return Uint8Array.from(bytes);
+  },
+  decode(buffer: Uint8Array): bigint {
+    let result = 0n;
+    let shift = 0n;
+    for (const byte of buffer) {
+      result |= BigInt(byte & 127) << shift;
+      if ((byte & 128) === 0) {
+        break;
+      }
+      shift += 7n;
     }
-  }
-  return num;
-}
-
-function write(num: string | number | bigint, stream: Stream) {
-  const bigNum = new Bn(num);
-  while (true) {
-    const i = bigNum.maskn(7).toNumber();
-    bigNum.ishrn(7);
-    if (bigNum.isZero()) {
-      stream.write([i]);
-      break;
-    } else {
-      stream.write([i | 0x80]);
-    }
-  }
-}
-
-export function lebEncode(num: bigint | number): Uint8Array {
-  let value = BigInt(num);
-  const bytes: number[] = [];
-  do {
-    let byte = Number(value & 127n); // low-order 7 bits of value
-    value >>= 7n;
-    if (value != 0n) {
-      //   set high-order bit of byte;
-      byte = byte | 128;
-    }
-    bytes.push(byte);
-  } while (value != 0n);
-  return Uint8Array.from(bytes);
-}
-
-/**
- * decodes a LEB128 encoded interger
- */
-export function lebDecode(buffer: Uint8Array): Uint8Array {
-  const stream = new Stream(buffer);
-  return read(stream);
-}
+    return result;
+  },
+};
