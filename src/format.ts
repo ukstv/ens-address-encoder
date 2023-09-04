@@ -8,8 +8,8 @@ export interface IFormat extends BytesCoder {
 }
 
 export class UnrecognizedAddressFormatError extends Error {
-  constructor() {
-    super("Unrecognised address format");
+  constructor(message?: string) {
+    super(`Unrecognised address format${message ? `: ${message}` : ""}`);
   }
 }
 

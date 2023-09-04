@@ -7,19 +7,35 @@
  * file LICENSE or http://www.opensource.org/licenses/mit-license.php.
  */
 
+import * as scureBase from "@scure/base";
 import * as base32 from "./base32.js";
 import bigInt from "big-integer";
 import bs58check from "bs58check";
 import { convertBits } from "./convertBits.js";
 import { validate, ValidationError } from "./validation.js";
 import { UnrecognizedAddressFormatError } from "../../format";
+import { concatBytes } from "@noble/hashes/utils";
 
-/**
- * Encoding and decoding of the new Cash Address format for eCash. <br />
- * Compliant with the original cashaddr specification:
- * {@link https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md}
- * @module cashaddr
- */
+export enum AddressType {
+  P2PKH = "P2PKH",
+  P2SH = "P2SH",
+}
+
+const BCH_BASE32 = scureBase.utils.chain(
+  scureBase.utils.alphabet("qpzry9x8gf2tvdw0s3jn54khce6mua7l"),
+  scureBase.utils.join(""),
+);
+const RADIX5 = scureBase.utils.radix2(5);
+const HASH_SIZE: Record<number, number> = {
+  0: 160,
+  1: 192,
+  2: 224,
+  3: 256,
+  4: 320,
+  5: 384,
+  6: 448,
+  7: 512,
+};
 
 /**
  * Encodes a hash from a given type into an eCash address with the given prefix.
@@ -41,11 +57,11 @@ function encode(prefix: string, type: string, hash: string | Uint8Array): string
   if (typeof hash === "string") {
     hash = stringToUint8Array(hash);
   }
-  var prefixData = concat(prefixToUint5Array(prefix), new Uint8Array(1));
+  var prefixData = concatBytes(prefixToUint5Array(prefix), new Uint8Array(1));
   var versionByte = getTypeBits(type.toUpperCase()) + getHashSizeBits(hash);
-  var payloadData = toUint5Array(concat(new Uint8Array([versionByte]), hash));
-  var checksumData = concat(concat(prefixData, payloadData), new Uint8Array(8));
-  var payload = concat(payloadData, checksumToUint5Array(polymod(checksumData)));
+  var payloadData = toUint5Array(concatBytes(new Uint8Array([versionByte]), hash));
+  var checksumData = concatBytes(prefixData, payloadData, new Uint8Array(8));
+  var payload = concatBytes(payloadData, checksumToUint5Array(polymod(checksumData)));
   return prefix + ":" + base32.encode(payload);
 }
 
@@ -68,7 +84,7 @@ function decode(address: string): { prefix?: string; type?: string; hash: string
     let hasValidChecksum = false;
     for (let i = 0; i < VALID_PREFIXES.length; i += 1) {
       const testedPrefix = VALID_PREFIXES[i];
-      const prefixlessPayload = base32.decode(pieces[0]);
+      const prefixlessPayload = new Uint8Array(BCH_BASE32.decode(pieces[0]));
       hasValidChecksum = validChecksum(testedPrefix, prefixlessPayload);
       if (hasValidChecksum) {
         // Here's your prefix
@@ -78,28 +94,35 @@ function decode(address: string): { prefix?: string; type?: string; hash: string
         break;
       }
     }
-    validate(
-      hasValidChecksum,
-      `Prefixless address ${address} does not have valid checksum for any valid prefix (${VALID_PREFIXES.join(", ")})`,
-    );
+    if (!hasValidChecksum) throw new UnrecognizedAddressFormatError();
+    if (!payload) throw new Error(`Something went wrong`);
+    var payloadData = RADIX5.decode(Array.from(payload.subarray(0, -8)));
+    var versionByte = payloadData[0];
+    var hash = payloadData.subarray(1);
+    validate(HASH_SIZE[versionByte & 7] === hash.length * 8, "Invalid hash size: " + address + ".");
+    const type = getType(versionByte);
+    return {
+      prefix: prefix,
+      type: type,
+      hash: hash,
+    };
   } else {
-    validate(pieces.length === 2, "Invalid address: " + address + ".");
+    if (pieces.length !== 2) throw new UnrecognizedAddressFormatError();
     prefix = pieces[0];
-    payload = base32.decode(pieces[1]);
-    validate(validChecksum(prefix, payload), "Invalid checksum: " + address + ".");
+    payload = new Uint8Array(BCH_BASE32.decode(pieces[1]));
+    if (!validChecksum(prefix, payload)) throw new UnrecognizedAddressFormatError();
+    var payloadData = RADIX5.decode(Array.from(payload.subarray(0, -8)));
+    var versionByte = payloadData[0];
+    var hash = payloadData.subarray(1);
+    validate(HASH_SIZE[versionByte & 7] === hash.length * 8, "Invalid hash size: " + address + ".");
+    const type = getType(versionByte);
+    return {
+      prefix: prefix,
+      type: type,
+      hash: hash,
+    };
   }
-
-  if (!payload) throw new Error(`Something went wrong`);
-  var payloadData = fromUint5Array(payload.subarray(0, -8));
-  var versionByte = payloadData[0];
-  var hash = payloadData.subarray(1);
-  validate(getHashSize(versionByte) === hash.length * 8, "Invalid hash size: " + address + ".");
-  var type = getType(versionByte);
-  return {
-    prefix: prefix,
-    type: type,
-    hash: hash,
-  };
+  throw new UnrecognizedAddressFormatError();
 }
 
 /**
@@ -183,23 +206,14 @@ function getTypeBits(type: string) {
   }
 }
 
-/**
- * Retrieves the address type from its bit representation within the
- * version byte.
- *
- * @private
- * @param {number} versionByte
- * @returns {string}
- * @throws {ValidationError}
- */
-function getType(versionByte: number) {
+function getType(versionByte: number): AddressType {
   switch (versionByte & 120) {
     case 0:
-      return "P2PKH";
+      return AddressType.P2PKH;
     case 8:
-      return "P2SH";
+      return AddressType.P2SH;
     default:
-      throw new ValidationError("Invalid address type in version byte: " + versionByte + ".");
+      throw new UnrecognizedAddressFormatError();
   }
 }
 
@@ -236,35 +250,6 @@ function getHashSizeBits(hash: Uint8Array): number {
 }
 
 /**
- * Retrieves the the length in bits of the encoded hash from its bit
- * representation within the version byte.
- *
- * @private
- * @param {number} versionByte
- * @returns {number}
- */
-function getHashSize(versionByte: number) {
-  switch (versionByte & 7) {
-    case 0:
-      return 160;
-    case 1:
-      return 192;
-    case 2:
-      return 224;
-    case 3:
-      return 256;
-    case 4:
-      return 320;
-    case 5:
-      return 384;
-    case 6:
-      return 448;
-    case 7:
-      return 512;
-  }
-}
-
-/**
  * Converts an array of 8-bit integers into an array of 5-bit integers,
  * right-padding with zeroes if necessary.
  *
@@ -276,45 +261,7 @@ function toUint5Array(data: Uint8Array): Uint8Array {
   return convertBits(data, 8, 5);
 }
 
-/**
- * Converts an array of 5-bit integers back into an array of 8-bit integers,
- * removing extra zeroes left from padding if necessary.
- * Throws a {@link ValidationError} if input is not a zero-padded array of 8-bit integers.
- *
- * @private
- * @param {Uint8Array} data
- * @returns {Uint8Array}
- * @throws {ValidationError}
- */
-function fromUint5Array(data: Uint8Array): Uint8Array {
-  return convertBits(data, 5, 8, true);
-}
-
-/**
- * Returns the concatenation a and b.
- *
- * @private
- * @param {Uint8Array} a
- * @param {Uint8Array} b
- * @returns {Uint8Array}
- * @throws {ValidationError}
- */
-function concat(a: Uint8Array, b: Uint8Array): Uint8Array {
-  var ab = new Uint8Array(a.length + b.length);
-  ab.set(a);
-  ab.set(b, a.length);
-  return ab;
-}
-
-/**
- * Computes a checksum from the given input data as specified for the CashAddr
- * format: https://github.com/Bitcoin-UAHF/spec/blob/master/cashaddr.md.
- *
- * @private
- * @param {Uint8Array} data Array of 5-bit integers over which the checksum is to be computed.
- * @returns {BigInteger}
- */
-function polymod(data: Uint8Array): bigInt.BigInteger {
+function polymod(data: ArrayLike<number>): bigInt.BigInteger {
   var GENERATOR = [0x98f2bc8e61, 0x79b76d99e2, 0xf33e5fb3c4, 0xae2eabe2a8, 0x1e4f43e470];
   var checksum = bigInt(1);
   for (var i = 0; i < data.length; ++i) {
@@ -340,8 +287,8 @@ function polymod(data: Uint8Array): bigInt.BigInteger {
  * @returns {boolean}
  */
 function validChecksum(prefix: string, payload: Uint8Array): boolean {
-  var prefixData = concat(prefixToUint5Array(prefix), new Uint8Array(1));
-  var checksumData = concat(prefixData, payload);
+  var prefixData = concatBytes(prefixToUint5Array(prefix), new Uint8Array(1));
+  var checksumData = concatBytes(prefixData, payload);
   return polymod(checksumData).equals(0);
 }
 
