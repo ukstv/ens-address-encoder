@@ -127,6 +127,7 @@ export const FORMATS: Array<IFormat> = [
   c("SOL", 501, base58),
   c("XHV", 535, base58xmr),
   c("FLOW", 539, flowCoder),
+  c("IRIS", 566, makeBech32Coder("iaa")),
   //   bech32Chain('IRIS', 566, 'iaa'),
   //   bitcoinBase58Chain('LRG', 568, [[0x1e]], [[0x0d]]),
   //   getConfig('SERO', 569, seroAddressEncoder, seroAddressDecoder),

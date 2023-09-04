@@ -763,18 +763,18 @@ export const TEST_VECTORS: Array<TestVector> = [
       },
     ],
   },
-  // {
-  //   name: "FLOW",
-  //   coinType: 539,
-  //   passingVectors: [{ text: "0xf233dcee88fe0abe", hex: "f233dcee88fe0abe" }],
-  // },
-  // {
-  //   name: "IRIS",
-  //   coinType: 566,
-  //   passingVectors: [
-  //     { text: "iaa1k5y45px87c42ttxgk8x4y6w0y9gzgcwvvunht5", hex: "b5095a04c7f62aa5acc8b1cd5269cf21502461cc" },
-  //   ],
-  // },
+  {
+    name: "FLOW",
+    coinType: 539,
+    passingVectors: [{ text: "0xf233dcee88fe0abe", hex: "f233dcee88fe0abe" }],
+  },
+  {
+    name: "IRIS",
+    coinType: 566,
+    passingVectors: [
+      { text: "iaa1k5y45px87c42ttxgk8x4y6w0y9gzgcwvvunht5", hex: "b5095a04c7f62aa5acc8b1cd5269cf21502461cc" },
+    ],
+  },
   // {
   //   name: "LRG",
   //   coinType: 568,
