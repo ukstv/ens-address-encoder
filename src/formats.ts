@@ -14,6 +14,7 @@ import { liskCoder } from "./chains/lisk.js";
 import { makeEosCoder } from "./chains/eos.js";
 import { xrpCodec } from "./chains/xrp.js";
 import { bchCodec } from "./chains/bch.js";
+import { decodeCheck as decodeEd25519PublicKey, encodeCheck as encodeEd25519PublicKey } from "crypto-addr-codec";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -61,7 +62,16 @@ export const FORMATS: Array<IFormat> = [
   c("KMD", 141, makeBitcoinBase58Check(h("3C"), h("55"))),
   c("XRP", 144, xrpCodec),
   c("BCH", 145, bchCodec),
+  getConfig('XLM', 148, strEncoder, strDecoder),
 ];
+
+function strDecoder(data: string): Uint8Array {
+  return decodeEd25519PublicKey('ed25519PublicKey', data);
+}
+
+function strEncoder(data: Uint8Array): string {
+  return encodeEd25519PublicKey('ed25519PublicKey', Buffer.from(data));
+}
 
 export const formatsByName: Record<string, IFormat> = Object.fromEntries(
   FORMATS.map((f) => {
