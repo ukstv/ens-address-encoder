@@ -1,6 +1,12 @@
 import type { IFormat } from "./format.js";
 import { fromCoder } from "./format.js";
-import { BS58, makeBech32Segwit, makeBitcoinBase58Check, makeBitcoinCoder } from "./chains/bitcoin.js";
+import {
+  bitcoinBase58Chain,
+  BS58,
+  makeBech32Segwit,
+  makeBitcoinBase58Check,
+  makeBitcoinCoder,
+} from "./chains/bitcoin.js";
 import { hexToBytes } from "@noble/hashes/utils";
 import { makeGroestlCoder } from "./chains/groestl";
 import { base32, base58, base58xmr, base64url, hex, utf8, utils } from "@scure/base";
@@ -128,10 +134,9 @@ export const FORMATS: Array<IFormat> = [
   c("XHV", 535, base58xmr),
   c("FLOW", 539, flowCoder),
   c("IRIS", 566, makeBech32Coder("iaa")),
-  //   bech32Chain('IRIS', 566, 'iaa'),
-  //   bitcoinBase58Chain('LRG', 568, [[0x1e]], [[0x0d]]),
-  //   getConfig('SERO', 569, seroAddressEncoder, seroAddressDecoder),
-  //   getConfig('BDX', 570, xmrAddressEncoder, xmrAddressDecoder),
+  c("LRG", 568, makeBitcoinBase58Check(h("1E"), h("0D"))),
+  c("SERO", 569, base58),
+  c("BDX", 570, base58xmr),
   //   bitcoinChain('CCXX', 571, 'ccx', [[0x89]], [[0x4b], [0x05]]),
   //   getConfig('SRM', 573, bs58EncodeNoCheck, bs58DecodeNoCheck),
   //   getConfig('VLX', 574, bs58EncodeNoCheck, bs58DecodeNoCheck),
