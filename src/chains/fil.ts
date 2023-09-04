@@ -88,30 +88,23 @@ function filDecode(address: string): Uint8Array {
 }
 
 function filEncode(network: string, address: Address) {
-  if (!address || !address.str) {
-    throw Error("Invalid address");
-  }
-  let addressString = "";
   const payload = address.payload();
   const protocol = address.protocol();
 
   switch (protocol) {
     case 0: {
       const decoded = LEBCoder.decode(payload);
-      addressString = network + String(protocol) + String(decoded);
-      break;
+      return `${network}${protocol}${decoded}`;
     }
     default: {
       const protocolByte = Uint8Array.from([protocol]);
       const toChecksum = concatBytes(protocolByte, payload);
       const checksum = getChecksum(toChecksum);
-      const bytes = concatBytes(payload, Uint8Array.from(checksum));
-      const bytes32encoded = base32unpadded.encode(bytes).toLowerCase();
-      addressString = String(network) + String(protocol) + bytes32encoded;
-      break;
+      const bytes = concatBytes(payload, checksum);
+      const bytes32encoded = base32unpadded.encode(bytes);
+      return `${network}${protocol}${bytes32encoded}`.toLowerCase();
     }
   }
-  return addressString;
 }
 
 export const filCoder: BytesCoder = {
