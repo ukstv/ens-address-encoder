@@ -1,14 +1,10 @@
-// https://en.wikipedia.org/wiki/Base32#Crockford's_Base32
 import { sha256 } from "@noble/hashes/sha256";
-import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
+import { concatBytes } from "@noble/hashes/utils";
 import { equalBytes } from "./numbers-bytes.js";
 import { UnrecognizedAddressFormatError } from "../format.js";
-import { base32crockford, utf8, utils } from "@scure/base";
-import { assertNumber } from "@scure/base";
-import { Coder } from "@scure/base/index";
+import { utils, type Coder } from "@scure/base";
 
 export const C32_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-const hex = "0123456789abcdef";
 
 function radix2prepad(bits: number, revPadding = false): Coder<Uint8Array, number[]> {
   return {
@@ -55,7 +51,7 @@ const version = {
   p2sh: new Uint8Array([20]),
 };
 
-function c32checksum(data: Uint8Array): Uint8Array {
+function calculateChecksum(data: Uint8Array): Uint8Array {
   return sha256(sha256(data)).slice(0, 4);
 }
 
@@ -69,12 +65,12 @@ export function c32checkEncode(data: Uint8Array): string {
   let c32str = "";
   let prefix = "";
 
-  if (equalBytes(c32checksum(concatBytes(version.p2pkh, hash160)), checksum)) {
+  if (equalBytes(calculateChecksum(concatBytes(version.p2pkh, hash160)), checksum)) {
     prefix = "P";
     c32str = C32.encode(concatBytes(hash160, checksum));
     return `S${prefix}${c32str}`;
   }
-  if (equalBytes(checksum, c32checksum(concatBytes(version.p2sh, hash160)))) {
+  if (equalBytes(checksum, calculateChecksum(concatBytes(version.p2sh, hash160)))) {
     prefix = "M";
     c32str = C32.encode(concatBytes(hash160, checksum));
     return `S${prefix}${c32str}`;
@@ -106,8 +102,7 @@ export function c32checkDecode(input: string): Uint8Array {
   const checksum = data.subarray(-4);
   const payload = data.subarray(0, -4);
 
-  const a = c32checksum(concatBytes(versionByte, payload));
-  if (!equalBytes(checksum, a)) {
+  if (!equalBytes(checksum, calculateChecksum(concatBytes(versionByte, payload)))) {
     throw new Error("Invalid c32check string: checksum mismatch");
   }
 
