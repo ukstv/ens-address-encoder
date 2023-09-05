@@ -8,6 +8,7 @@ import { base32crockford, utf8, utils } from "@scure/base";
 export const C32_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const hex = "0123456789abcdef";
 
+
 // p2pkh: 'P'
 // p2sh: 'M'
 const version = {
@@ -34,13 +35,14 @@ export function c32checkEncode(data: Uint8Array): string {
   if (equalBytes(c32checksum(concatBytes(version.p2pkh, hash160)), checksum)) {
     prefix = "P";
     c32str = c32encode(bytesToHex(concatBytes(hash160, checksum)));
+    return `S${prefix}${c32str}`;
   }
   if (equalBytes(checksum, c32checksum(concatBytes(version.p2sh, hash160)))) {
     prefix = "M";
     c32str = c32encode(bytesToHex(concatBytes(hash160, checksum)));
+    return `S${prefix}${c32str}`;
   }
-
-  return `S${prefix}${c32str}`;
+  throw new UnrecognizedAddressFormatError()
 }
 
 function c32encode(inputHex: string): string {
