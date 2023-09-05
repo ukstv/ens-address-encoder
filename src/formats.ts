@@ -185,7 +185,7 @@ export const FORMATS: Array<IFormat> = [
   //   hexChecksumChain('NRG_LEGACY', 9797),
   //   getConfig('ARDR', 16754, ardrAddressEncoder, ardrAddressDecoder),
   //   zcashChain('ZEL', 19167, 'za', [[0x1c, 0xb8]], [[0x1c, 0xbd]]),
-  //   hexChecksumChain('CELO_LEGACY', 52752), TODO
+  c("CELO_LEGACY", 52752, makeChecksummedHexCoder()),
   //   bitcoinBase58Chain('WICC', 99999, [[0x49]], [[0x33]]), TODO
   //   getConfig('WAN', 5718350, wanChecksummedHexEncoder, wanChecksummedHexDecoder),
   //   getConfig('WAVES', 5741564, bs58EncodeNoCheck, wavesAddressDecoder),

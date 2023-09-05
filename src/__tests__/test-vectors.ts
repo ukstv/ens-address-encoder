@@ -1196,13 +1196,13 @@ export const TEST_VECTORS: Array<TestVector> = [
   //     { text: "t3c51GjrkUg7pUiS8bzNdTnW2hD25egWUih", hex: "a914c008da0bbc92b35ff71f613ca10ff11e2a6ae2fe87" },
   //   ],
   // },
-  // {
-  //   name: "CELO_LEGACY",
-  //   coinType: 52752,
-  //   passingVectors: [
-  //     { text: "0x67316300f17f063085Ca8bCa4bd3f7a5a3C66275", hex: "67316300f17f063085ca8bca4bd3f7a5a3c66275" },
-  //   ],
-  // },
+  {
+    name: "CELO_LEGACY",
+    coinType: 52752,
+    passingVectors: [
+      { text: "0x67316300f17f063085Ca8bCa4bd3f7a5a3C66275", hex: "67316300f17f063085ca8bca4bd3f7a5a3c66275" },
+    ],
+  },
   // {
   //   name: "WICC",
   //   coinType: 99999,
