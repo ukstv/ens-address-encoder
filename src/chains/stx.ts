@@ -58,7 +58,6 @@ function c32encode(inputHex: string): string {
       }
       // carry = 0, nextBits is 1, carry = 1, nextBits is 2
       const nextBits = 1 + carry;
-      // tslint:disable-next-line:no-bitwise
       const nextLowBits = nextCode % (1 << nextBits) << (5 - nextBits);
       const curC32Digit = C32_ALPHABET[currentCode + nextLowBits];
       carry = nextBits;
