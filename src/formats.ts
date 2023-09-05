@@ -33,8 +33,8 @@ import { filCoder } from "./chains/fil.js";
 import { base64urlnopad } from "@scure/base";
 import { flowCoder } from "./chains/flow.js";
 import { tezosCoder } from "./chains/tezos.js";
-import { hnsCoder } from "./chains/hns";
-import { c32checkDecode, c32checkEncode } from "./chains/stx";
+import { hnsCoder } from "./chains/hns.js";
+import { stxCoder } from "./chains/stx.js";
 
 const getConfig = (name: string, coinType: number, encode: IFormat["encode"], decode: IFormat["decode"]): IFormat => {
   return {
@@ -176,7 +176,7 @@ export const FORMATS: Array<IFormat> = [
   //   },
   //   iotaBech32Chain('IOTA', 4218, 'iota'),
   c("HNS", 5353, hnsCoder),
-  getConfig("STX", 5757, c32checkEncode, c32checkDecode),
+  c("STX", 5757, stxCoder),
   //   hexChecksumChain('GO_LEGACY', 6060),
   //   bech32mChain('XCH', 8444, 'xch', 90),
   //   getConfig('NULS', 8964, nulsAddressEncoder, nulsAddressDecoder),

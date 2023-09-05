@@ -2,7 +2,7 @@ import { sha256 } from "@noble/hashes/sha256";
 import { concatBytes } from "@noble/hashes/utils";
 import { equalBytes } from "./numbers-bytes.js";
 import { UnrecognizedAddressFormatError } from "../format.js";
-import { utils, type Coder } from "@scure/base";
+import { utils, type Coder, BytesCoder } from "@scure/base";
 
 export const C32_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
@@ -55,7 +55,7 @@ function calculateChecksum(data: Uint8Array): Uint8Array {
   return sha256(sha256(data)).slice(0, 4);
 }
 
-export function c32checkEncode(data: Uint8Array): string {
+function c32checkEncode(data: Uint8Array): string {
   const hash160 = data.subarray(0, data.length - 4);
   if (hash160.length !== 20) {
     throw new UnrecognizedAddressFormatError();
@@ -85,7 +85,7 @@ function c32normalize(c32input: string): string {
   return c32input.toUpperCase().replace(/O/g, "0").replace(/[IL]/g, "1");
 }
 
-export function c32checkDecode(input: string): Uint8Array {
+function c32checkDecode(input: string): Uint8Array {
   if (input.length <= 5) {
     throw new Error("Invalid c32 address: invalid length");
   }
@@ -107,4 +107,9 @@ export function c32checkDecode(input: string): Uint8Array {
   }
 
   return data;
+}
+
+export const stxCoder: BytesCoder = {
+  encode: c32checkEncode,
+  decode: c32checkDecode
 }
