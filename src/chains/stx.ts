@@ -89,8 +89,7 @@ export function c32checkDecode(input: string): Uint8Array {
   const version = C32_ALPHABET.indexOf(versionChar);
   const versionByte = new Uint8Array([version])
 
-  const dataHex = c32decode(c32data.slice(1));
-  const data = hexToBytes(dataHex);
+  const data = hexToBytes(c32decode(c32data.slice(1)));
   const checksum = data.subarray(-4);
   const payload = data.subarray(0, -4);
 
