@@ -22,30 +22,22 @@ function c32checksum(data: Uint8Array): Uint8Array {
 }
 
 export function c32checkEncode(data: Uint8Array): string {
-  const dataHex = bytesToHex(data);
-  let hash160hex = dataHex.substring(0, dataHex.length - 8);
   const hash160 = data.subarray(0, data.length - 4);
   if (hash160.length !== 20) {
     throw new UnrecognizedAddressFormatError();
   }
 
-  hash160hex = hash160hex.toLowerCase();
-  if (hash160hex.length % 2 !== 0) {
-    hash160hex = `0${hash160hex}`;
-  }
-
-  const checksumHex = dataHex.slice(-8);
   const checksum = data.subarray(-4);
   let c32str = "";
   let prefix = "";
 
   if (equalBytes(c32checksum(concatBytes(version.p2pkh, hash160)), checksum)) {
     prefix = "P";
-    c32str = c32encode(`${hash160hex}${checksumHex}`);
+    c32str = c32encode(bytesToHex(concatBytes(hash160, checksum)));
   }
   if (equalBytes(checksum, c32checksum(concatBytes(version.p2sh, hash160)))) {
     prefix = "M";
-    c32str = c32encode(`${hash160hex}${checksumHex}`);
+    c32str = c32encode(bytesToHex(concatBytes(hash160, checksum)));
   }
 
   return `S${prefix}${c32str}`;
@@ -136,15 +128,15 @@ export function c32checkDecode(input: string): Uint8Array {
 
   const dataHex = c32decode(c32data.slice(1));
   const data = hexToBytes(dataHex);
-  const checksum = data.subarray(-4)
-  const payload = data.subarray(0, -4)
+  const checksum = data.subarray(-4);
+  const payload = data.subarray(0, -4);
 
   const a = c32checksum(concatBytes(versionBytes, payload));
   if (!equalBytes(checksum, a)) {
     throw new Error("Invalid c32check string: checksum mismatch");
   }
 
-  return data
+  return data;
 }
 
 function c32decode(c32input: string): string {
