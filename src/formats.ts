@@ -186,7 +186,7 @@ export const FORMATS: Array<IFormat> = [
   //   getConfig('ARDR', 16754, ardrAddressEncoder, ardrAddressDecoder),
   //   zcashChain('ZEL', 19167, 'za', [[0x1c, 0xb8]], [[0x1c, 0xbd]]),
   c("CELO_LEGACY", 52752, makeChecksummedHexCoder()),
-  //   bitcoinBase58Chain('WICC', 99999, [[0x49]], [[0x33]]), TODO
+  c("WICC", 99999, makeBitcoinBase58Check(h("49"), h("33"))),
   //   getConfig('WAN', 5718350, wanChecksummedHexEncoder, wanChecksummedHexDecoder),
   //   getConfig('WAVES', 5741564, bs58EncodeNoCheck, wavesAddressDecoder),
   //   // EVM chainIds
