@@ -67,16 +67,6 @@ function c32encode(inputHex: string): string {
       carry = 0;
     }
   }
-
-  let C32leadingZeros = 0;
-  // tslint:disable-next-line:prefer-for-of
-  for (let i = 0; i < res.length; i++) {
-    if (res[i] !== "0") {
-      break;
-    } else {
-      C32leadingZeros++;
-    }
-  }
   return res.join("");
 }
 
