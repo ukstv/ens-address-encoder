@@ -87,19 +87,14 @@ export function c32checkDecode(input: string): Uint8Array {
   const c32data = c32normalize(input.slice(1));
   const versionChar = c32data[0];
   const version = C32_ALPHABET.indexOf(versionChar);
-
-  let versionHex = version.toString(16);
-  if (versionHex.length === 1) {
-    versionHex = `0${versionHex}`;
-  }
-  const versionBytes = hexToBytes(versionHex);
+  const versionByte = new Uint8Array([version])
 
   const dataHex = c32decode(c32data.slice(1));
   const data = hexToBytes(dataHex);
   const checksum = data.subarray(-4);
   const payload = data.subarray(0, -4);
 
-  const a = c32checksum(concatBytes(versionBytes, payload));
+  const a = c32checksum(concatBytes(versionByte, payload));
   if (!equalBytes(checksum, a)) {
     throw new Error("Invalid c32check string: checksum mismatch");
   }
