@@ -136,11 +136,10 @@ export function c32checkDecode(input: string): Uint8Array {
 
   const dataHex = c32decode(c32data.slice(1));
   const data = hexToBytes(dataHex);
+  const checksum = data.subarray(-4)
+  const payload = data.subarray(0, -4)
 
-  const checksumHex = dataHex.slice(-8);
-  const checksum = hexToBytes(checksumHex);
-
-  const a = c32checksum(concatBytes(versionBytes, data.subarray(0, data.length - 4)));
+  const a = c32checksum(concatBytes(versionBytes, payload));
   if (!equalBytes(checksum, a)) {
     throw new Error("Invalid c32check string: checksum mismatch");
   }
