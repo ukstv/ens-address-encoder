@@ -77,16 +77,6 @@ function c32encode(inputHex: string): string {
       C32leadingZeros++;
     }
   }
-
-  res = res.slice(C32leadingZeros);
-
-  const zeroPrefix = utf8.encode(hexToBytes(inputHex)).match(/^\u0000*/);
-  const numLeadingZeroBytesInHex = zeroPrefix ? zeroPrefix[0].length : 0;
-
-  for (let i = 0; i < numLeadingZeroBytesInHex; i++) {
-    res.unshift(C32_ALPHABET[0]);
-  }
-
   return res.join("");
 }
 
@@ -153,9 +143,7 @@ function c32decode(c32input: string): string {
     const currentValue = currentCode + carry;
     const currentHexDigit = hex[currentValue % 16];
     carryBits += 1;
-    // tslint:disable-next-line:no-bitwise
     carry = currentValue >> 4;
-    // tslint:disable-next-line:no-bitwise
     if (carry > 1 << carryBits) {
       throw new Error("Panic error in decoding.");
     }
