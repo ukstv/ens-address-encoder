@@ -3,7 +3,7 @@ import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { equalBytes } from "./numbers-bytes.js";
 import { UnrecognizedAddressFormatError } from "../format.js";
-import { utils } from "@scure/base";
+import { base32crockford, utils } from "@scure/base";
 
 export const C32_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const hex = "0123456789abcdef";
