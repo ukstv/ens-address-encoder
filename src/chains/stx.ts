@@ -3,7 +3,7 @@ import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
 import { equalBytes } from "./numbers-bytes.js";
 import { UnrecognizedAddressFormatError } from "../format.js";
-import { base32crockford, utils } from "@scure/base";
+import { base32crockford, utf8, utils } from "@scure/base";
 
 export const C32_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const hex = "0123456789abcdef";
@@ -44,15 +44,6 @@ export function c32checkEncode(data: Uint8Array): string {
 }
 
 function c32encode(inputHex: string): string {
-  // must be hex
-  if (!inputHex.match(/^[0-9a-fA-F]*$/)) {
-    throw new Error("Not a hex-encoded string");
-  }
-
-  if (inputHex.length % 2 !== 0) {
-    inputHex = `0${inputHex}`;
-  }
-
   inputHex = inputHex.toLowerCase();
 
   let res = [];
@@ -89,9 +80,7 @@ function c32encode(inputHex: string): string {
 
   res = res.slice(C32leadingZeros);
 
-  const zeroPrefix = Buffer.from(inputHex, "hex")
-    .toString()
-    .match(/^\u0000*/);
+  const zeroPrefix = utf8.encode(hexToBytes(inputHex)).match(/^\u0000*/);
   const numLeadingZeroBytesInHex = zeroPrefix ? zeroPrefix[0].length : 0;
 
   for (let i = 0; i < numLeadingZeroBytesInHex; i++) {
