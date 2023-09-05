@@ -12,7 +12,6 @@ test("vectors sorted by coinType", () => {
 });
 
 for (const coin of TEST_VECTORS) {
-  break
   const coinSuite = suite(`Test Vectors: ${coin.name}`);
 
   coinSuite("formatsByName correspond to formatsByCoinType", () => {
