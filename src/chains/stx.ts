@@ -116,7 +116,7 @@ function c32normalize(c32input: string): string {
   return c32input.toUpperCase().replace(/O/g, "0").replace(/[IL]/g, "1");
 }
 
-export function c32checkDecode(input: string): Buffer {
+export function c32checkDecode(input: string): Uint8Array {
   if (input.length <= 5) {
     throw new Error("Invalid c32 address: invalid length");
   }
@@ -132,20 +132,20 @@ export function c32checkDecode(input: string): Buffer {
   if (versionHex.length === 1) {
     versionHex = `0${versionHex}`;
   }
-  const versionBytes = hexToBytes(versionHex)
+  const versionBytes = hexToBytes(versionHex);
 
   const dataHex = c32decode(c32data.slice(1));
-  const data = hexToBytes(dataHex)
+  const data = hexToBytes(dataHex);
 
   const checksumHex = dataHex.slice(-8);
   const checksum = hexToBytes(checksumHex);
 
-  const a = c32checksum(concatBytes(versionBytes, hexToBytes(dataHex.substring(0, dataHex.length - 8))));
+  const a = c32checksum(concatBytes(versionBytes, data.subarray(0, data.length - 4)));
   if (!equalBytes(checksum, a)) {
     throw new Error("Invalid c32check string: checksum mismatch");
   }
 
-  return Buffer.from(dataHex, "hex");
+  return data
 }
 
 function c32decode(c32input: string): string {
