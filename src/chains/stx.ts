@@ -1,10 +1,21 @@
 // https://en.wikipedia.org/wiki/Base32#Crockford's_Base32
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils";
-import { equalBytes } from "./numbers-bytes";
-import { UnrecognizedAddressFormatError } from "../format";
+import { equalBytes } from "./numbers-bytes.js";
+import { UnrecognizedAddressFormatError } from "../format.js";
+import { utils } from "@scure/base";
+
 export const C32_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const hex = "0123456789abcdef";
+
+// p2pkh: 'P'
+// p2sh: 'M'
+const version = {
+  p2pkh: new Uint8Array([22]),
+  p2sh: new Uint8Array([20]),
+};
+
+const C = utils.chain(utils.checksum(4, (ingest) => sha256(sha256(ingest)).slice(0, 4)));
 
 function c32checksum(data: Uint8Array): Uint8Array {
   return sha256(sha256(data)).slice(0, 4);
@@ -22,13 +33,6 @@ export function c32checkEncode(data: Uint8Array): string {
   if (hash160hex.length % 2 !== 0) {
     hash160hex = `0${hash160hex}`;
   }
-
-  // p2pkh: 'P'
-  // p2sh: 'M'
-  const version = {
-    p2pkh: new Uint8Array([22]),
-    p2sh: new Uint8Array([20]),
-  };
 
   const checksumHex = dataHex.slice(-8);
   const checksum = data.subarray(-4);
@@ -112,15 +116,15 @@ function c32normalize(c32input: string): string {
   return c32input.toUpperCase().replace(/O/g, "0").replace(/[IL]/g, "1");
 }
 
-export function c32checkDecode(data: string): Buffer {
-  if (data.length <= 5) {
+export function c32checkDecode(input: string): Buffer {
+  if (input.length <= 5) {
     throw new Error("Invalid c32 address: invalid length");
   }
-  if (data[0] !== "S") {
+  if (input[0] !== "S") {
     throw new Error('Invalid c32 address: must start with "S"');
   }
 
-  const c32data = c32normalize(data.slice(1));
+  const c32data = c32normalize(input.slice(1));
   const versionChar = c32data[0];
   const version = C32_ALPHABET.indexOf(versionChar);
 
@@ -128,12 +132,15 @@ export function c32checkDecode(data: string): Buffer {
   if (versionHex.length === 1) {
     versionHex = `0${versionHex}`;
   }
+  const versionBytes = hexToBytes(versionHex)
 
   const dataHex = c32decode(c32data.slice(1));
+  const data = hexToBytes(dataHex)
+
   const checksumHex = dataHex.slice(-8);
   const checksum = hexToBytes(checksumHex);
 
-  const a = c32checksum(concatBytes(hexToBytes(versionHex), hexToBytes(dataHex.substring(0, dataHex.length - 8))));
+  const a = c32checksum(concatBytes(versionBytes, hexToBytes(dataHex.substring(0, dataHex.length - 8))));
   if (!equalBytes(checksum, a)) {
     throw new Error("Invalid c32check string: checksum mismatch");
   }
